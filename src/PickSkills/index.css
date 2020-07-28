@@ -1,0 +1,7 @@
+.Pick-skills {
+    display: grid;
+    grid-template-columns: repeat(3,64px);
+    gap: 7px;
+    padding: 10px;
+}
+

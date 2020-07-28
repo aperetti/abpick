@@ -1,0 +1,23 @@
+.Controls-container {
+    height: 90px;
+    margin-bottom: 10px;
+}
+
+.Controls-action {
+    cursor: pointer;
+}
+
+.Controls-action:active {
+    box-shadow: inset 1px 1px 2px var(--bg-dark);
+}
+
+.Controls-actions {
+    display: grid;
+    grid-template-columns: 1fr;
+    justify-content: center;
+    gap: 5px;
+}
+
+.Controls-actions > div {
+    padding: 5px;
+}

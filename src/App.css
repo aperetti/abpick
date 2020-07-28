@@ -1,3 +1,10 @@
+:root {
+  --bg-light:#383c48;
+  --bg-dark: #16171a;
+  --bg-norm: #212226;
+}
+
+
 .App {
   text-align: center;
 }
@@ -14,7 +21,6 @@
 }
 
 .App-header {
-  background-color: #282c34;
   min-height: 100vh;
   display: flex;
   flex-direction: column;
@@ -35,4 +41,29 @@
   to {
     transform: rotate(360deg);
   }
+}
+
+.pick-container-content {
+  display: grid;
+  grid-template-rows: repeat(6,75px);
+  grid-template-columns: 50% 50%;
+  padding-bottom: 10px;
+}
+
+.picked-container-content {
+  display: grid;
+  grid-template-rows: repeat(5, auto);
+  gap: 15px;
+  justify-content: center;
+  padding-top: 10px;
+  padding-bottom: 10px;
+}
+
+.survival-container-content {
+  display: grid;
+  gap: 10px;
+  justify-content: center;
+  grid-template-columns: auto auto;
+  padding-top: 10px;
+  padding-bottom: 10px;
 }

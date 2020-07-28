@@ -1,0 +1,7 @@
+.Ultimate-skills {
+    display: grid;
+    padding: 10px;
+    grid-template-columns: repeat(6, 64px);
+    grid-template-rows: repeat(2, 64px);
+    gap: 8px;
+}

@@ -1,0 +1,88 @@
+.header {
+    background: linear-gradient(to right, var(--bg-light), var(--bg-dark));
+    filter: drop-shadow(0 1px 5px #07070a);
+    display: inline-block;
+    height: 50px;
+    width: 100%;
+    color: white;
+}
+
+.hdr-logo {
+    position: absolute;
+    left: 125px;
+    top: -8px;
+    bottom:75px;
+    right: 175px;
+    filter: drop-shadow(0 0px 10px 10px #fff);
+}
+
+.hdr-base {
+    position: absolute;
+    left: 100px;
+    top: 0;
+    border-top: 60px solid var(--bg-light);
+    border-left: 15px solid transparent;
+    border-right: 15px solid transparent;
+    height: 0;
+    width: 100px;
+    filter: drop-shadow(0 1px 3px #101818);
+
+}
+
+.hdr-base-2 {
+    position: absolute;
+    left: 90px;
+    top: 0;
+    border-top: 55px solid var(--bg-light);
+    border-left: 15px solid transparent;
+    border-right: 15px solid transparent;
+    height: 0;
+    width: 120px;
+    filter: drop-shadow(0 1px 3px #101818);
+}
+
+.hdr-buttons {
+    display: flex;
+    align-items: flex-start;
+    justify-content: flex-start;
+    position: absolute;
+    left: 250px;
+    right: 0px;
+    list-style-type: none;
+    text-transform: uppercase;
+    margin: 0
+}
+
+ul.hdr-buttons li {
+    top: 15px;
+    position: relative;
+    font-family: Volkhov;
+    line-height: 1.2;
+    height: 50px;
+    font-weight: 1000;
+    letter-spacing: 2px;
+    font-size: 20px;
+    color: darkgrey;
+    text-shadow: -1px -1px 1px rgb(50, 50, 50), 0 0 0 #000;
+    display: inline-block;
+    padding-right: 40px;
+    text-align: left;
+    cursor: pointer;
+}
+
+ul.hdr-buttons li:hover {
+    text-shadow: 0px 1px 10px rgba(150, 150, 150, .7), 0 0 0 #000;
+}
+
+ul.hdr-buttons li:not(:last-child):after {
+    content: '';
+    display: inline-block;
+    position: absolute;
+    top: -13px;
+    right: 20px;
+    width: 2px;
+    height: 48px;
+    background: #222;
+    transform: skew(-20deg);
+    filter: drop-shadow(-1px -1px 1px #384848);
+}

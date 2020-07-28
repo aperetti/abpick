@@ -1,0 +1,27 @@
+
+.skill-details {
+    background: linear-gradient(var(--bg-dark), var(--bg-norm));
+    box-shadow: 3px 3px 4px var(#050505); 
+    padding:15px;
+    width: 400px;
+}
+
+.skill-detail {
+    width: 100%;
+    padding-left: 10px;
+}
+
+.skill-desc {
+    width: 35%;
+    display: inline-block;
+}
+
+.skill-content {
+    width: 65%;
+    display: inline-block;
+}
+
+.skill-title {
+    font-weight: bold;
+    font-size: 24px;
+}

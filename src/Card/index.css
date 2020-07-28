@@ -1,0 +1,18 @@
+.card {
+    background: linear-gradient(var(--bg-light), var(--bg-norm));
+    box-shadow: 2px 2px 4px #101010;
+}
+
+.card-title {
+    background: #101010;
+    color: darkgray;
+    font-size: 14px;
+    text-transform: uppercase;
+    display: block;
+    padding: 4px;
+    padding-left: 10px;
+}
+
+.card-content {
+    /* display: block; */
+}

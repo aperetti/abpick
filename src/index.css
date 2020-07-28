@@ -5,9 +5,20 @@ body {
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  background: radial-gradient(#383c48, #101318);
+  height: 100vh;
 }
 
 code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
+}
+
+.card-header {
+  background: #101818;
+}
+
+@font-face {
+  font-family: 'Volkhov';
+  src: local('Volkhov'), url(./font/Volkhov-Regular.ttf) format('truetype');
 }

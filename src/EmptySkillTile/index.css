@@ -1,0 +1,11 @@
+.skill-empty {
+    box-shadow: inset 1px 1px 2px #050505;
+    height: 64px;
+    width: 64px;
+}
+
+.skill {
+    background: var(--bg-dark);
+    border: 1px;
+    border-radius: 2px;
+}
