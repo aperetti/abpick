@@ -6,7 +6,7 @@ import EmptyUltTile from '../EmptyUltTile'
 import Ultimate from '../types/Ultimate';
 
 interface Props {
-  skills: Array<Skill|undefined>
+  skills: Array<Skill | null>
   ultimates: Array<Ultimate>
   setHero: (heroId: number, slot: number) => void
   setPickedSkill: (skill: Skill) => void
@@ -16,7 +16,7 @@ interface Props {
 const slotLookup = [0, 1, 2, 9, 10, 11, 3, 4, 5, 8, 7, 6]
 
 function UltimateSkills(props: PropsWithChildren<Props>) {
-  let {skills, ultimates, setHero, setPickedSkill, pickHistory} = props
+  let { skills, ultimates, setHero, setPickedSkill, pickHistory } = props
   return (
     <div className="Ultimate-skills">
       {slotLookup.map(idx => skills[idx * 4 + 3]).map((skill, i) => {

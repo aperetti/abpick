@@ -5,7 +5,7 @@ import SkillTile from '../SkillTile'
 import EmptySkillTile from '../EmptySkillTile'
 
 interface Props {
-  skills: Array<Skill | undefined>
+  skills: Array<Skill | null>
   slot: number;
   setPickedSkill: (skill: Skill, idx: number) => void
   pickHistory: number[];
