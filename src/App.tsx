@@ -6,7 +6,7 @@ import UltimateContainer from './UltimateContainer'
 import UltimateSkills from './UltimateSkills'
 import Card from './Card'
 import Header from './Header'
-import Logo from './logo.svg'
+import Logo from './logo512.png'
 import PickContainer from './PickContainer';
 import PickedContainer from './PickedContainer';
 import getUltimates from './api/getUltimate';
@@ -21,6 +21,8 @@ import Controls from './Controls'
 import getSkills from './api/getSkills'
 import { Popover } from '@blueprintjs/core'
 import JoinRoom from './JoinRoom';
+import RoundContainer from './RoundContainer';
+import WinContainer from './WinContainer';
 
 type SkillDict = Record<number, Skill>
 type NullableSkillList = Array<number | null>
@@ -262,7 +264,7 @@ function App() {
         </PickedContainer>
 
         {skills.filter(notNull).length > 0 && <SurvivalContainer>
-          <Card title="Survival" contentClass="survival-container-content">
+          <Card title="Survival" contentClass="stat-container-content">
             {mapSkills(skills)
               .filter(notNull)
               .filter((skill) => !pickHistory.includes(skill.abilityId))
@@ -277,6 +279,42 @@ function App() {
               })}
           </Card>
         </SurvivalContainer>}
+
+        {skills.filter(notNull).length > 0 && <RoundContainer>
+          <Card title="Average Pick" contentClass="stat-container-content">
+            {mapSkills(skills)
+              .filter(notNull)
+              .filter((skill) => !pickHistory.includes(skill.abilityId))
+              .sort((skill1, skill2) => {
+                return skill1.stats.mean - skill2.stats.mean
+              })
+              .splice(0, 10)
+              .map(skill => {
+                return <div>
+                  <SkillTile skill={skill}></SkillTile>
+                </div>
+              })}
+          </Card>
+        </RoundContainer>}
+
+        {skills.filter(notNull).length > 0 && <WinContainer>
+          <Card title="Win Rate" contentClass="stat-container-content">
+            {mapSkills(skills)
+              .filter(notNull)
+              .filter((skill) => !pickHistory.includes(skill.abilityId))
+              .sort((skill1, skill2) => {
+                let i = Math.floor(pickHistory.length / 10)
+                return skill2.stats.winRate - skill1.stats.winRate
+              })
+              .splice(0, 10)
+              .map(skill => {
+                return <div>
+                  <SkillTile skill={skill}></SkillTile>
+                </div>
+              })}
+          </Card>
+        </WinContainer>}
+
       </DraftBoard>
     </div>
   );

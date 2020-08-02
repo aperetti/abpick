@@ -27,7 +27,12 @@ function Header(props: PropsWithChildren<Props>) {
   }, [skill])
 
   return (
-    <div className={`skill bp3-dark ${picked ? 'skill-picked': ''} ${loading ? 'skill-loading' : ''}`} onClick={onClick}>
+    <div className={`
+      skill bp3-dark 
+      ${picked ? 'skill-picked' : ''} 
+      ${loading ? 'skill-loading' : ''} 
+      ${onClick ? 'skill-click' : ''}`}
+      onClick={onClick}>
       {img && !loading && <Popover hoverOpenDelay={100} minimal hoverCloseDelay={0} interactionKind='hover-target' content={<SkillDetails skill={skill} ></SkillDetails>} target={<img src={img} alt={skill.dname}></img>} />}
     </div>
   );

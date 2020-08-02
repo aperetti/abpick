@@ -1,0 +1,5 @@
+.Win-container {
+    grid-column: 6;
+    grid-row: 1 / span last-line;
+}
+

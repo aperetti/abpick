@@ -6,14 +6,11 @@
     width: 100%;
     color: white;
 }
-
 .hdr-logo {
-    position: absolute;
-    left: 125px;
-    top: -8px;
-    bottom:75px;
-    right: 175px;
-    filter: drop-shadow(0 0px 10px 10px #fff);
+	position: absolute;
+	left: 125px;
+	top: 5px;
+	filter: drop-shadow(2px 2px 5px #212226);
 }
 
 .hdr-base {

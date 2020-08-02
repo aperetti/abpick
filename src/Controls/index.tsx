@@ -15,7 +15,7 @@ function Controls(props: PropsWithChildren<Props>) {
       <Card title="Controls">
         <div className='Controls-actions'>
           <div onClick={() => undoPick()} className={`${pickHistory.length > 0 ? 'Controls-action' : ''}`}>
-            <Icon iconSize={40} icon='undo' />
+            <Icon color={`${pickHistory.length > 0 ? 'darkgrey' : 'var(--bg-dark)'}`} iconSize={40} icon='undo' />
           </div>
         </div>
       </Card>

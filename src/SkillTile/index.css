@@ -10,6 +10,9 @@
     border-radius: 2px;
     height: 64px;
     width: 64px;
+}
+
+.skill-click {
     cursor: pointer;
 }
 
