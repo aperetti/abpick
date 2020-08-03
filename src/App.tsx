@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { emitCreateRoom, emitJoinRoom, emitLeaveRoom, onRoomJoined, emitUpdateState, onStateUpdate, SocketAppState, onConnect } from './socket'
+import {useCookies} from 'react-cookie'
+import { emitCreateRoom, emitJoinRoom, emitLeaveRoom, onRoomJoined, emitUpdateState, onStateUpdate, SocketAppState, onRoomLeft } from './socket'
 import './App.css';
 import DraftBoard from './DraftBoard'
 import UltimateContainer from './UltimateContainer'
@@ -37,7 +38,8 @@ export interface State {
   loading: boolean,
   stateId: number,
   pickHistory: number[],
-  changeId: number
+  changeId: number,
+  editMode: boolean
 }
 
 let initialState: State = {
@@ -52,15 +54,23 @@ let initialState: State = {
   stateId: 0,
   pickHistory: [],
   changeId: 0,
+  editMode: false
 }
 
 function App() {
   let [state, setState] = useState<State>(initialState)
-  let { skillDict, skills, pickedSkills, ultimates, turn, room, roomId, loading, stateId, pickHistory } = state
+  let { skillDict, skills, pickedSkills, ultimates, turn, room, roomId, loading, stateId, pickHistory, editMode } = state
+
+  const [cookies, setCookie, removeCookie] = useCookies(['room']);
 
   useEffect(() => {
     getUltimates(setState)
+    onRoomLeft(() => {
+      setState(state => ({...state, room: '', roomId: ''}))
+      removeCookie('room')
+    })
     onRoomJoined(async (state) => {
+      setCookie('room', state.room)
       setState(oldState => ({
         ...oldState,
         room: state.room,
@@ -69,15 +79,15 @@ function App() {
       await mergeState(state)
     })
     onStateUpdate(mergeState)
-    onConnect(() => {
-      if (room !== '')
-        emitJoinRoom(room)
-    })
+    if (cookies.room) {
+      emitJoinRoom(cookies.room)
+    }
   }, [])
   
   useEffect(() => {
     sendNewState()
   }, [state.changeId])
+
 
   function mapSkills(skillIds: Array<number | null>): Array<Skill | null> {
     return skillIds.map(skillId => {
@@ -117,14 +127,8 @@ function App() {
     setState(state => ({...state, loading: true}))
     let newSkills = socketState.skills.filter(notNull).filter(skill => skillDict[skill] === undefined)
     try {
-      console.log("Updated")
       let newSkillDetails = await getSkills(newSkills)
       let newSkillDict = mapSkillListToDict(newSkillDetails)
-      console.log(socketState.skills)
-      console.log(newSkills)
-      console.log(newSkillDict)
-      console.log(skillDict)
-      console.log({ ...skillDict, ...newSkillDict })
       setState(state => ({
         ...state,
         skills: socketState.skills,
@@ -144,8 +148,6 @@ function App() {
   function notNull<T>(x: T | null): x is T {
     return x !== null;
   }
-
-
 
   function undoPick() {
     if (pickHistory.length === 0)
@@ -234,23 +236,23 @@ function App() {
 
         <UltimateContainer>
           <Card title="Ultimates">
-            <UltimateSkills setPickedSkill={setPickedSkill} pickHistory={pickHistory} setHero={setHero} skills={mapSkills(skills)} ultimates={filteredUlts} />
+            <UltimateSkills editMode={editMode} setPickedSkill={setPickedSkill} pickHistory={pickHistory} setHero={setHero} skills={mapSkills(skills)} ultimates={filteredUlts} />
           </Card>
         </UltimateContainer>
 
         <PickContainer>
           <Card title="Standard Abilities" contentClass="pick-container-content">
             {[0, 11, 1, 10, 2, 9, 3, 8, 4, 7, 5, 6].map(slot => {
-              return (<PickSkills setPickedSkill={setPickedSkill} pickHistory={pickHistory} slot={slot} skills={mapSkills(skills.slice(slot * 4, slot * 4 + 3))}></PickSkills>)
+              return (<PickSkills key={`standard-abilities-${slot}`} setPickedSkill={setPickedSkill} pickHistory={pickHistory} slot={slot} skills={mapSkills(skills.slice(slot * 4, slot * 4 + 3))}></PickSkills>)
             })}
           </Card>
         </PickContainer>
 
         <PickedContainer>
-          <Controls undoPick={undoPick} pickHistory={pickHistory}></Controls>
+          <Controls editMode={editMode} toggleEditMode={() => setState(state => ({...state, editMode: !editMode}))} undoPick={undoPick} pickHistory={pickHistory}></Controls>
           <Card title="Radiant Picks" contentClass="picked-container-content">
             {[0, 2, 4, 6, 8].map(slot => {
-              return (<PickedSkills slot={slot} turn={turn} skills={mapSkills(pickedSkills.slice(slot * 4, slot * 4 + 4))}></PickedSkills>)
+              return (<PickedSkills key={`radiant-skills-${slot}`} slot={slot} turn={turn} skills={mapSkills(pickedSkills.slice(slot * 4, slot * 4 + 4))}></PickedSkills>)
             })}
           </Card>
         </PickedContainer>
@@ -258,7 +260,7 @@ function App() {
         <PickedContainer right>
           <Card title="Dire Picks" contentClass="picked-container-content">
             {[1, 3, 5, 7, 9].map(slot => {
-              return (<PickedSkills slot={slot} turn={turn} skills={mapSkills(pickedSkills.slice(slot * 4, slot * 4 + 4))}></PickedSkills>)
+              return (<PickedSkills key={`dire picks-${slot}`} slot={slot} turn={turn} skills={mapSkills(pickedSkills.slice(slot * 4, slot * 4 + 4))}></PickedSkills>)
             })}
           </Card>
         </PickedContainer>
@@ -271,10 +273,10 @@ function App() {
               .sort((skill1, skill2) => {
                 return skill1.stats.survival[pickHistory.length + 1] - skill2.stats.survival[pickHistory.length + 1]
               })
-              .splice(0, 10)
+              .slice(0, 16)
               .map(skill => {
                 return <div>
-                  <SkillTile skill={skill}></SkillTile>
+                  <SkillTile key={`survival-${skill.abilityId}`} skill={skill}></SkillTile>
                 </div>
               })}
           </Card>
@@ -288,10 +290,10 @@ function App() {
               .sort((skill1, skill2) => {
                 return skill1.stats.mean - skill2.stats.mean
               })
-              .splice(0, 10)
+              .slice(0, 16)
               .map(skill => {
                 return <div>
-                  <SkillTile skill={skill}></SkillTile>
+                  <SkillTile key={`pick-${skill.abilityId}`} skill={skill}></SkillTile>
                 </div>
               })}
           </Card>
@@ -303,13 +305,12 @@ function App() {
               .filter(notNull)
               .filter((skill) => !pickHistory.includes(skill.abilityId))
               .sort((skill1, skill2) => {
-                let i = Math.floor(pickHistory.length / 10)
                 return skill2.stats.winRate - skill1.stats.winRate
               })
-              .splice(0, 10)
+              .slice(0, 16)
               .map(skill => {
                 return <div>
-                  <SkillTile skill={skill}></SkillTile>
+                  <SkillTile key={`win-rate-${skill.abilityId}`} skill={skill}></SkillTile>
                 </div>
               })}
           </Card>

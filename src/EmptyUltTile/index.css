@@ -9,6 +9,11 @@
     box-shadow: inset 1px 1px 4px var(--bg-light);
 }
 
+.ult-empty-img {
+    opacity: .3;
+    filter: grayscale(50%)
+}
+
 .skill {
     background: var(--bg-dark);
     border: 1px;

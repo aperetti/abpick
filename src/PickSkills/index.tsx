@@ -17,9 +17,9 @@ function PickSkills(props: PropsWithChildren<Props>) {
     <div className="Pick-skills">
       {skills.map((skill, i) => {
         if (skill) {
-          return <SkillTile picked={pickHistory.includes(skill.abilityId)} onClick={() => setPickedSkill(skill, slot*4+i)} skill={skill}></SkillTile>
+          return <SkillTile key={`Pick-skill-${skill.abilityId}`} picked={pickHistory.includes(skill.abilityId)} onClick={() => setPickedSkill(skill, slot*4+i)} skill={skill}></SkillTile>
         } else {
-          return <EmptySkillTile></EmptySkillTile>
+          return <EmptySkillTile key={`Empty-pick-skill-${i}`}></EmptySkillTile>
         }
       })
       }

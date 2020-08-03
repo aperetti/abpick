@@ -6,7 +6,6 @@ client.on('disconnect', () => {
     timeOut = setInterval(() => client.connect(), 1000)
 })
 
-
 export interface SocketAppState {
     skills: Array<number | null>;
     pickedSkills: Array<number | null>;
@@ -25,27 +24,31 @@ export let onConnect = (cb: () => void) => {
 }
 
 
-    export let onStateUpdate = (cb: (appState: SocketAppState) => void) => {
-        client.on('stateUpdated', cb)
-    }
+export let onStateUpdate = (cb: (appState: SocketAppState) => void) => {
+    client.on('stateUpdated', cb)
+}
 
-    export let emitJoinRoom = (roomId: string) => {
-        client.emit('joinRoom', roomId)
-    }
+export let emitJoinRoom = (roomId: string) => {
+    client.emit('joinRoom', roomId)
+}
 
-    export let emitCreateRoom = (state: SocketAppState) => {
-        client.emit('createRoom', state)
-    }
+export let emitCreateRoom = (state: SocketAppState) => {
+    client.emit('createRoom', state)
+}
 
-    export let onRoomJoined = (cb: (state: SocketAppState) => void) => {
-        client.on('roomJoined', cb)
-    }
+export let onRoomJoined = (cb: (state: SocketAppState) => void) => {
+    client.on('roomJoined', cb)
+}
 
-    export let emitLeaveRoom = () => {
-        client.emit('leaveRoom')
-    }
+export let emitLeaveRoom = () => {
+    client.emit('leaveRoom')
+}
 
-    export let emitUpdateState = (state: SocketAppState) => {
-        client.emit('updateState', state)
-    }
+export let onRoomLeft = (cb: () => void) => {
+    client.on('roomLeft', cb)
+}
+
+export let emitUpdateState = (state: SocketAppState) => {
+    client.emit('updateState', state)
+}
 

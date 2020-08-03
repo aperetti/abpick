@@ -4,10 +4,14 @@ import Ultimate from '../types/Ultimate';
 import { Select, ItemRenderer, ItemPredicate } from '@blueprintjs/select'
 import { MenuItem } from '@blueprintjs/core'
 import fuzzy from 'fuzzy'
+import Skill from '../types/Skill';
+import SkillImage from '../SkillImage'
+
 interface Props {
   ultimates: Ultimate[]
   setHero: (id: number, slot: number) => void
   slot: number
+  skill: Skill | null
 }
 
 const UltSelect = Select.ofType<Ultimate>();
@@ -47,7 +51,7 @@ const predicateUlt: ItemPredicate<Ultimate> = (query, ultimate) => {
 
 
 function EmptyUltTile(props: PropsWithChildren<Props>) {
-  let { ultimates, setHero, slot } = props
+  let { ultimates, setHero, slot, skill } = props
 
   return (
     (ultimates.length >= 0 && <UltSelect
@@ -58,7 +62,7 @@ function EmptyUltTile(props: PropsWithChildren<Props>) {
       popoverProps={{ minimal: true }}
       onItemSelect={(ult: Ultimate) => setHero(ult.heroId, slot)}
       noResults={<MenuItem disabled={true} text="No results." />}>
-      <div className="ult-skill-empty skill"></div>
+      <div className="ult-skill-empty skill">{skill && <SkillImage skill={skill} edit />}</div>
     </UltSelect>) || <div></div>
   );
 }
