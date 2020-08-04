@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import {useCookies} from 'react-cookie'
+import { useCookies } from 'react-cookie'
+import { useDebounce } from 'use-debounce'
 import { emitCreateRoom, emitJoinRoom, emitLeaveRoom, onRoomJoined, emitUpdateState, onStateUpdate, SocketAppState, onRoomLeft } from './socket'
 import './App.css';
 import DraftBoard from './DraftBoard'
@@ -24,6 +25,7 @@ import { Popover } from '@blueprintjs/core'
 import JoinRoom from './JoinRoom';
 import RoundContainer from './RoundContainer';
 import WinContainer from './WinContainer';
+import { stat } from 'fs';
 
 type SkillDict = Record<number, Skill>
 type NullableSkillList = Array<number | null>
@@ -60,13 +62,13 @@ let initialState: State = {
 function App() {
   let [state, setState] = useState<State>(initialState)
   let { skillDict, skills, pickedSkills, ultimates, turn, room, roomId, loading, stateId, pickHistory, editMode } = state
-
+  let [debounceChange] = useDebounce(state.changeId, 200)
   const [cookies, setCookie, removeCookie] = useCookies(['room']);
 
   useEffect(() => {
     getUltimates(setState)
     onRoomLeft(() => {
-      setState(state => ({...state, room: '', roomId: ''}))
+      setState(state => ({ ...state, room: '', roomId: '' }))
       removeCookie('room')
     })
     onRoomJoined(async (state) => {
@@ -83,10 +85,10 @@ function App() {
       emitJoinRoom(cookies.room)
     }
   }, [])
-  
+
   useEffect(() => {
     sendNewState()
-  }, [state.changeId])
+  }, [debounceChange])
 
 
   function mapSkills(skillIds: Array<number | null>): Array<Skill | null> {
@@ -97,22 +99,21 @@ function App() {
     })
   }
 
-  function getSocketState(): SocketAppState {
+  function getSocketState(state: State): SocketAppState {
+    let { pickHistory, pickedSkills, skills, turn, stateId, room, roomId } = state
     return {
-      pickHistory: pickHistory,
-      pickedSkills: pickedSkills,
-      skills: skills,
-      turn: turn,
-      stateId: stateId,
-      room: room,
-      _id: roomId
+      pickHistory, pickedSkills, skills, turn, stateId, room, _id: roomId
     }
   }
 
   function sendNewState() {
     if (room === '')
       return
-    emitUpdateState(getSocketState())
+    setState(state => {
+      let newState = { ...state, stateId: state.stateId + 1 }
+      emitUpdateState(getSocketState(newState));
+      return newState
+    })
   }
 
   function mapSkillListToDict(skills: Array<Skill>): SkillDict {
@@ -122,25 +123,33 @@ function App() {
     })
     return skillDictUpdate
   }
-
-  async function mergeState(socketState: SocketAppState) {
-    setState(state => ({...state, loading: true}))
-    let newSkills = socketState.skills.filter(notNull).filter(skill => skillDict[skill] === undefined)
-    try {
+  useEffect(() => {
+    const fetchSkills = async () => {
+      let newSkills = skills.filter(notNull).filter(skill => skillDict[skill] === undefined)
       let newSkillDetails = await getSkills(newSkills)
       let newSkillDict = mapSkillListToDict(newSkillDetails)
-      setState(state => ({
-        ...state,
-        skills: socketState.skills,
-        skillDict: { ...skillDict, ...newSkillDict },
-        pickHistory: socketState.pickHistory,
-        pickedSkills: socketState.pickedSkills,
-        stateId: socketState.stateId,
-        turn: socketState.turn,
-        loading: false
-      }))
+      setState(state => ({...state, skillDict: {...state.skillDict, ...newSkillDict}}))
+    }
+    fetchSkills()
+  }, [skills])
+
+  async function mergeState(socketState: SocketAppState) {
+    setState(state => ({ ...state, loading: true }))
+    try {
+      setState(state => {
+        if ( state.stateId >= socketState.stateId)
+          return state
+        return {
+          ...state,
+          skills: socketState.skills,
+          pickHistory: socketState.pickHistory,
+          pickedSkills: socketState.pickedSkills,
+          stateId: socketState.stateId,
+          turn: socketState.turn,
+          loading: false
+        }
+      })
     } catch (e) {
-      console.log(e)
       setState(state => ({ ...state, loading: false }))
     }
   }
@@ -182,7 +191,7 @@ function App() {
     setState(state => ({
       ...state,
       skills: newSkills,
-      skillDict: {...state.skillDict, ...skillDictUpdate},
+      skillDict: { ...state.skillDict, ...skillDictUpdate },
       changeId: state.changeId + 1
     }))
   }
@@ -227,7 +236,7 @@ function App() {
   return (
     <div className="App bp3-dark">
       <Header logo={Logo}>
-        {room === '' && <li onClick={() => emitCreateRoom(getSocketState())}>Create Room</li>}
+        {room === '' && <li onClick={() => emitCreateRoom(getSocketState(state))}>Create Room</li>}
         {room === '' && <Popover target={<li>Join Room</li>} content={<JoinRoom joinRoom={emitJoinRoom} />}></Popover>}
         {room !== '' && <li onClick={() => emitLeaveRoom()}>Leave Room</li>}
         {room !== '' && <li>Room: {room}</li>}
@@ -249,7 +258,7 @@ function App() {
         </PickContainer>
 
         <PickedContainer>
-          <Controls editMode={editMode} toggleEditMode={() => setState(state => ({...state, editMode: !editMode}))} undoPick={undoPick} pickHistory={pickHistory}></Controls>
+          <Controls editMode={editMode} toggleEditMode={() => setState(state => ({ ...state, editMode: !editMode }))} undoPick={undoPick} pickHistory={pickHistory}></Controls>
           <Card title="Radiant Picks" contentClass="picked-container-content">
             {[0, 2, 4, 6, 8].map(slot => {
               return (<PickedSkills key={`radiant-skills-${slot}`} slot={slot} turn={turn} skills={mapSkills(pickedSkills.slice(slot * 4, slot * 4 + 4))}></PickedSkills>)
