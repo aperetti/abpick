@@ -116,6 +116,22 @@ function App() {
     })
   }
 
+  function sendCreateRoom() {
+    setState(state => {
+      let newState = { ...state, stateId: state.stateId + 1 }
+      emitCreateRoom(getSocketState(newState));
+      return newState
+    })
+  }
+
+  function sendJoinRoom(room: string) {
+    setState(state => {
+      let newState = { ...state, stateId: 0 }
+      emitJoinRoom(room)
+      return newState
+    })
+  }
+
   function mapSkillListToDict(skills: Array<Skill>): SkillDict {
     let skillDictUpdate: SkillDict = {}
     skills.forEach(el => {
@@ -236,8 +252,8 @@ function App() {
   return (
     <div className="App bp3-dark">
       <Header logo={Logo}>
-        {room === '' && <li onClick={() => emitCreateRoom(getSocketState(state))}>Create Room</li>}
-        {room === '' && <Popover target={<li>Join Room</li>} content={<JoinRoom joinRoom={emitJoinRoom} />}></Popover>}
+        {room === '' && <li onClick={sendCreateRoom}>Create Room</li>}
+        {room === '' && <Popover target={<li>Join Room</li>} content={<JoinRoom joinRoom={sendJoinRoom} />}></Popover>}
         {room !== '' && <li onClick={() => emitLeaveRoom()}>Leave Room</li>}
         {room !== '' && <li>Room: {room}</li>}
       </Header>
