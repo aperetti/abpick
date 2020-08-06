@@ -173,6 +173,16 @@ function App() {
     return x !== null;
   }
 
+  function calculateTurn(picked: NullableSkillList) {
+    let turnCalc = picked.filter(notNull).length % 20
+    if (turnCalc > 9) {
+      return 19 - turnCalc
+    }
+    else {
+      return turnCalc
+    }
+  }
+
   function undoPick() {
     if (pickHistory.length === 0)
       return
@@ -191,7 +201,7 @@ function App() {
       ...state,
       pickedSkills: newPicked,
       pickHistory: newHistory,
-      turn: (turn - 1) % 10,
+      turn: calculateTurn(newPicked),
       changeId: state.changeId + 1
     }))
   }
@@ -240,7 +250,7 @@ function App() {
     setState(state => ({
       ...state,
       pickedSkills: newPicked,
-      turn: (turn + 1) % 10,
+      turn: calculateTurn(newPicked),
       pickHistory: [...state.pickHistory, skill.abilityId],
       changeId: state.changeId + 1
     }))
