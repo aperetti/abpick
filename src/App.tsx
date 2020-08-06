@@ -25,7 +25,6 @@ import { Popover } from '@blueprintjs/core'
 import JoinRoom from './JoinRoom';
 import RoundContainer from './RoundContainer';
 import WinContainer from './WinContainer';
-import { stat } from 'fs';
 
 type SkillDict = Record<number, Skill>
 type NullableSkillList = Array<number | null>
@@ -61,7 +60,7 @@ let initialState: State = {
 
 function App() {
   let [state, setState] = useState<State>(initialState)
-  let { skillDict, skills, pickedSkills, ultimates, turn, room, roomId, loading, stateId, pickHistory, editMode } = state
+  let { skillDict, skills, pickedSkills, ultimates, turn, room, pickHistory, editMode } = state
   let [debounceChange] = useDebounce(state.changeId, 200)
   const [cookies, setCookie, removeCookie] = useCookies(['room']);
 

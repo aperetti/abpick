@@ -31,7 +31,7 @@ function UltimateSkills(props: PropsWithChildren<Props>) {
           }
         })}
       </div>
-      {(help && skills.filter(el => el).length == 0) && <div className="Ultimate-help" onClick={() => setHelp(!help)}>
+      {(help && skills.filter(el => el).length === 0) && <div className="Ultimate-help" onClick={() => setHelp(!help)}>
         <Tag large minimal icon="add">Add ults, start tracking picks!</Tag>
       </div>}
 
