@@ -1,7 +1,27 @@
+.Ultimate-content {
+    position: relative;
+}
+
 .Ultimate-skills {
     display: grid;
     padding: 10px;
     grid-template-columns: repeat(6, 64px);
     grid-template-rows: repeat(2, 64px);
     gap: 8px;
+}
+
+.Ultimate-help {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    outline-style: solid;
+    outline-width: 1px;
+    outline-color: darkkhaki;
+    box-shadow: inset 0px 0px 15px darkkhaki;
+    background: rgba(189, 183, 107, 0.1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }

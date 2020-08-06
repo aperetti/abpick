@@ -261,7 +261,7 @@ function App() {
           <Controls editMode={editMode} toggleEditMode={() => setState(state => ({ ...state, editMode: !editMode }))} undoPick={undoPick} pickHistory={pickHistory}></Controls>
           <Card title="Radiant Picks" contentClass="picked-container-content">
             {[0, 2, 4, 6, 8].map(slot => {
-              return (<PickedSkills key={`radiant-skills-${slot}`} slot={slot} turn={turn} skills={mapSkills(pickedSkills.slice(slot * 4, slot * 4 + 4))}></PickedSkills>)
+              return (<PickedSkills key={`radiant-skills-${slot}`} slot={slot} turn={skills.filter(notNull).length > 0 ? turn : -1} skills={mapSkills(pickedSkills.slice(slot * 4, slot * 4 + 4))}></PickedSkills>)
             })}
           </Card>
         </PickedContainer>

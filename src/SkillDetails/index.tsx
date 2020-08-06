@@ -1,7 +1,7 @@
 import React, { PropsWithChildren } from 'react';
 import './index.css';
 import Skill from '../types/Skill';
-import { VictoryArea, VictoryChart } from 'victory'
+import { VictoryArea, VictoryChart, VictoryLabel, VictoryAxis } from 'victory'
 
 interface Props {
   skill: Skill;
@@ -35,8 +35,24 @@ function SkillDetails(props: PropsWithChildren<Props>) {
       <SkillDetail desc="Pick Variation">{dec(skill.stats.std, 0)}</SkillDetail>
       <SkillDetail desc="Win Rate">{`${(skill.stats.winRate * 100).toFixed(1)}%`}</SkillDetail>
       <VictoryChart>
+        <VictoryLabel
+          textAnchor="start" verticalAnchor="middle"
+          x={5} y={25}
+          style={{ fontSize: 20, fill: "white", color: "white", fontWeight: 400 }}
+          text="Skill Survival"
+          className="skill-graph-title"
+        />
+        <VictoryAxis dependentAxis style={{
+          axisLabel: { stroke: "#c43a31" },
+          axis: { stroke: "#c43a31" },
+          tickLabels: { stroke: "#c43a31" },
+          ticks: { stroke: "#c43a31", },
+        }} />
         <VictoryArea
-          style={{ data: { fill: "#c43a31" } }}
+          name="Survival Rate"
+          style={{
+            data: { fill: "#c43a31" },
+          }}
           data={skill.stats.survival.map((percent, i) => {
             return { pick: i + 1, percent: Math.round(percent * 1000) / 10 }
           })
