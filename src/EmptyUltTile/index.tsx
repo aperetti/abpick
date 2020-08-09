@@ -27,17 +27,33 @@ const renderUlt: ItemRenderer<Ultimate> = (ultimate, { handleClick, modifiers, q
     return null;
   }
 
-  let match = fuzzy.match(query, ultimate.abilityName, { pre: "##", post: "##" })
+  let matchAbility = fuzzy.match(query, ultimate.abilityName, { pre: "##", post: "##" })
+  let strings
+  let renderedString
+  if (matchAbility) {
+    strings = matchAbility.rendered.split("##")
+    renderedString = renderString(strings)
+  } else {
+    renderedString = <p>{ultimate.abilityName}</p>
+  }
 
-  let strings = match.rendered.split("##")
+  let matchHero = fuzzy.match(query, ultimate.heroName, { pre: "##", post: "##" })
+  let stringsHero
+  let renderedStringHero
+  if (matchHero) {
+    stringsHero = matchHero.rendered.split("##")
+    renderedStringHero = renderString(stringsHero)
+  } else {
+    renderedString = <p>{ultimate.heroName}</p>
+  }
 
-  let renderedString = renderString(strings)
 
   return (
     <MenuItem
+      data-testid={`ultSelect${ultimate.abilityId}`}
       active={modifiers.active}
       disabled={modifiers.disabled}
-      label={ultimate.heroName}
+      labelElement={renderedStringHero}
       key={ultimate.abilityId}
       onClick={handleClick}
       text={renderedString}
@@ -46,7 +62,7 @@ const renderUlt: ItemRenderer<Ultimate> = (ultimate, { handleClick, modifiers, q
 };
 
 const predicateUlt: ItemPredicate<Ultimate> = (query, ultimate) => {
-  return fuzzy.test(query, ultimate.abilityName)
+  return fuzzy.test(query, ultimate.abilityName) || fuzzy.test(query, ultimate.heroName)
 }
 
 
@@ -62,7 +78,8 @@ function EmptyUltTile(props: PropsWithChildren<Props>) {
       popoverProps={{ minimal: true }}
       onItemSelect={(ult: Ultimate) => setHero(ult.heroId, slot)}
       noResults={<MenuItem disabled={true} text="No results." />}>
-      <div className="ult-skill-empty skill">{skill && <SkillImage skill={skill} edit />}</div>
+      <div data-testid={`emptyUltTile${slot}`} className="ult-skill-empty skill">{skill && <SkillImage skill={skill} edit />}</div>
+
     </UltSelect>) || <div></div>
   );
 }

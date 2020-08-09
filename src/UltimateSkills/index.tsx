@@ -27,11 +27,11 @@ function UltimateSkills(props: PropsWithChildren<Props>) {
           if (!skill || editMode) {
             return <EmptyUltTile skill={skill} setHero={setHero} key={i} ultimates={ultimates} slot={slotLookup[i]}></EmptyUltTile>
           } else {
-            return <SkillTile picked={pickHistory.includes(skill.abilityId)} onClick={() => setPickedSkill(skill)} skill={skill}></SkillTile>
+            return <SkillTile data-testid={`ultSkillTile${i}`} picked={pickHistory.includes(skill.abilityId)} onClick={() => setPickedSkill(skill)} skill={skill}></SkillTile>
           }
         })}
       </div>
-      {(help && skills.filter(el => el).length === 0) && <div className="Ultimate-help" onClick={() => setHelp(!help)}>
+      {(help && skills.filter(el => el).length === 0) && <div data-testid="ultHelp" className="Ultimate-help" onClick={() => setHelp(!help)}>
         <Tag large minimal icon="add">Add ults, start tracking picks!</Tag>
       </div>}
 

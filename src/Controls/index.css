@@ -5,6 +5,11 @@
 
 .Controls-action {
     cursor: pointer;
+    padding: 10px 5px;
+}
+
+.Controls-action-disabled {
+    padding: 10px 5px;
 }
 
 .Controls-action:active {
@@ -18,11 +23,8 @@
 
 .Controls-actions {
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: 1fr 1fr 1fr;
     justify-content: center;
     gap: 5px;
 }
 
-.Controls-actions > div {
-    padding: 5px;
-}

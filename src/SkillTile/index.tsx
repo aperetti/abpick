@@ -11,7 +11,7 @@ interface Props {
   picked?: boolean;
 }
 
-function Header(props: PropsWithChildren<Props>) {
+function SkillTile(props: PropsWithChildren<Props>) {
   let { skill, onClick, picked } = props
 
   // let [img, setImg] = useState('')
@@ -35,4 +35,4 @@ function Header(props: PropsWithChildren<Props>) {
   );
 }
 
-export default Header;
+export default SkillTile;

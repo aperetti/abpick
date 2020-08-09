@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useCookies } from 'react-cookie'
 import { useDebounce } from 'use-debounce'
 import { emitCreateRoom, emitJoinRoom, emitLeaveRoom, onRoomJoined, emitUpdateState, onStateUpdate, SocketAppState, onRoomLeft } from './socket'
@@ -26,8 +26,8 @@ import JoinRoom from './JoinRoom';
 import RoundContainer from './RoundContainer';
 import WinContainer from './WinContainer';
 
-type SkillDict = Record<number, Skill>
-type NullableSkillList = Array<number | null>
+export type SkillDict = Record<number, Skill>
+export type NullableSkillList = Array<number | null>
 export interface State {
   skillDict: SkillDict,
   skills: NullableSkillList,
@@ -58,54 +58,51 @@ let initialState: State = {
   editMode: false
 }
 
+function notNull<T>(x: T | null): x is T {
+  return x !== null;
+}
+
+function shuffle<T>(array: Array<T>): Array<T> {
+  let newArray = [...array]
+  var i = newArray.length,
+    j = 0,
+    temp;
+
+  while (i--) {
+
+    j = Math.floor(Math.random() * (i + 1));
+
+    // swap randomly chosen element with current element
+    temp = newArray[i];
+    newArray[i] = newArray[j];
+    newArray[j] = temp;
+
+  }
+  return newArray;
+}
+
 function App() {
   let [state, setState] = useState<State>(initialState)
   let { skillDict, skills, pickedSkills, ultimates, turn, room, pickHistory, editMode } = state
   let [debounceChange] = useDebounce(state.changeId, 200)
   const [cookies, setCookie, removeCookie] = useCookies(['room']);
 
-  useEffect(() => {
-    getUltimates(setState)
-    onRoomLeft(() => {
-      setState(state => ({ ...state, room: '', roomId: '' }))
-      removeCookie('room')
-    })
-    onRoomJoined(async (state) => {
-      setCookie('room', state.room)
-      setState(oldState => ({
-        ...oldState,
-        room: state.room,
-        roomId: state._id
-      }))
-      await mergeState(state)
-    })
-    onStateUpdate(mergeState)
-    if (cookies.room) {
-      emitJoinRoom(cookies.room)
-    }
-  }, [])
-
-  useEffect(() => {
-    sendNewState()
-  }, [debounceChange])
-
-
-  function mapSkills(skillIds: Array<number | null>): Array<Skill | null> {
+  const mapSkills = useCallback((skillIds: Array<number | null>): Array<Skill | null> => {
     return skillIds.map(skillId => {
       if (skillId === null)
         return null
       return skillDict[skillId] || null
     })
-  }
+  }, [skillDict])
 
-  function getSocketState(state: State): SocketAppState {
+  const getSocketState = useCallback((state: State): SocketAppState => {
     let { pickHistory, pickedSkills, skills, turn, stateId, room, roomId } = state
     return {
       pickHistory, pickedSkills, skills, turn, stateId, room, _id: roomId
     }
-  }
+  }, [])
 
-  function sendNewState() {
+  const sendNewState = useCallback(() => {
     if (room === '')
       return
     setState(state => {
@@ -113,46 +110,37 @@ function App() {
       emitUpdateState(getSocketState(newState));
       return newState
     })
-  }
+  }, [room, getSocketState])
 
-  function sendCreateRoom() {
+  const sendCreateRoom = useCallback(() => {
     setState(state => {
       let newState = { ...state, stateId: state.stateId + 1 }
       emitCreateRoom(getSocketState(newState));
       return newState
     })
-  }
+  }, [getSocketState])
 
-  function sendJoinRoom(room: string) {
+  const sendJoinRoom = useCallback((room: string) => {
     setState(state => {
       let newState = { ...state, stateId: 0 }
       emitJoinRoom(room)
       return newState
     })
-  }
+  }, [])
 
-  function mapSkillListToDict(skills: Array<Skill>): SkillDict {
+  const mapSkillListToDict = useCallback((skills: Array<Skill>): SkillDict => {
     let skillDictUpdate: SkillDict = {}
     skills.forEach(el => {
       skillDictUpdate[el.abilityId] = el
     })
     return skillDictUpdate
-  }
-  useEffect(() => {
-    const fetchSkills = async () => {
-      let newSkills = skills.filter(notNull).filter(skill => skillDict[skill] === undefined)
-      let newSkillDetails = await getSkills(newSkills)
-      let newSkillDict = mapSkillListToDict(newSkillDetails)
-      setState(state => ({...state, skillDict: {...state.skillDict, ...newSkillDict}}))
-    }
-    fetchSkills()
-  }, [skills])
+  }, [])
 
-  async function mergeState(socketState: SocketAppState) {
+  const mergeState = useCallback(async (socketState: SocketAppState) => {
     setState(state => ({ ...state, loading: true }))
     try {
       setState(state => {
-        if ( state.stateId >= socketState.stateId)
+        if (state.stateId >= socketState.stateId)
           return state
         return {
           ...state,
@@ -167,13 +155,9 @@ function App() {
     } catch (e) {
       setState(state => ({ ...state, loading: false }))
     }
-  }
+  }, [])
 
-  function notNull<T>(x: T | null): x is T {
-    return x !== null;
-  }
-
-  function calculateTurn(picked: NullableSkillList) {
+  const calculateTurn = useCallback((picked) => {
     let turnCalc = picked.filter(notNull).length % 20
     if (turnCalc > 9) {
       return 19 - turnCalc
@@ -181,9 +165,33 @@ function App() {
     else {
       return turnCalc
     }
-  }
+  }, [])
 
-  function undoPick() {
+  const randomizeBoard = useCallback(() => {
+    const newUlts = shuffle(ultimates).slice(0, 12)
+    let newSkills = newUlts.reduce((skillList: NullableSkillList, ult): NullableSkillList => {
+      skillList = [...skillList, ...ult.heroAbilities]
+      return skillList
+    }, [])
+    setState(state => ({ ...state, skills: newSkills }))
+  }, [ultimates])
+
+  const handleBoardResults = useCallback((newUlts: Array<number>) => {
+
+    const slotLookup = [0, 1, 2, 6, 7, 8, 11, 10, 9, 3, 4, 5]
+    let newSkills = slotLookup
+      .map(el => newUlts[el])
+      .map(el => ultimates.find(ult => ult.abilityId === el))
+      .reduce((prevSkills: NullableSkillList, ult) => {
+        if (ult === undefined)
+          return [...prevSkills, null, null, null, null]
+        else
+          return [...prevSkills, ...ult.heroAbilities]
+      }, [])
+    setState(state => ({ ...state, skills: newSkills }))
+  }, [ultimates])
+
+  const undoPick = useCallback(() => {
     if (pickHistory.length === 0)
       return
     let newHistory = pickHistory.slice(0, -1)
@@ -204,10 +212,9 @@ function App() {
       turn: calculateTurn(newPicked),
       changeId: state.changeId + 1
     }))
-  }
+  }, [pickHistory, pickedSkills, calculateTurn])
 
-
-  let setHero = async (id: number, slot: number) => {
+  const setHero = useCallback(async (id: number, slot: number) => {
     let skillResponse = await getHeroSkills(id)
     let newSkills = [...skills]
     let skillDictUpdate = mapSkillListToDict(skillResponse)
@@ -219,9 +226,9 @@ function App() {
       skillDict: { ...state.skillDict, ...skillDictUpdate },
       changeId: state.changeId + 1
     }))
-  }
+  }, [mapSkillListToDict, skills])
 
-  let setPickedSkill = (skill: Skill) => {
+  const setPickedSkill = useCallback((skill: Skill) => {
     if (pickHistory.includes(skill.abilityId)) {
       return
     }
@@ -254,17 +261,55 @@ function App() {
       pickHistory: [...state.pickHistory, skill.abilityId],
       changeId: state.changeId + 1
     }))
-  }
+  }, [calculateTurn, pickHistory, pickedSkills, turn, ultimates])
+
+
+  useEffect(() => {
+    getUltimates(setState)
+    onRoomLeft(() => {
+      setState(_ => initialState)
+      removeCookie('room')
+    })
+    onRoomJoined(async (state) => {
+      setCookie('room', state.room)
+      setState(oldState => ({
+        ...oldState,
+        room: state.room,
+        roomId: state._id
+      }))
+      await mergeState(state)
+    })
+    onStateUpdate(mergeState)
+    if (cookies.room) {
+      emitJoinRoom(cookies.room)
+    }
+  }, [])
+
+  useEffect(() => {
+    sendNewState()
+  }, [debounceChange])
+
+  useEffect(() => {
+    const fetchSkills = async () => {
+      let newSkills = skills.filter(notNull).filter(skill => skillDict[skill] === undefined)
+      let newSkillDetails = await getSkills(newSkills)
+      let newSkillDict = mapSkillListToDict(newSkillDetails)
+      setState(state => ({ ...state, skillDict: { ...state.skillDict, ...newSkillDict } }))
+    }
+    fetchSkills()
+  }, [skills])
+
+
 
   let filteredUlts = ultimates.filter(ult => !skills.includes(ult.abilityId))
 
   return (
     <div className="App bp3-dark">
       <Header logo={Logo}>
-        {room === '' && <li onClick={sendCreateRoom}>Create Room</li>}
-        {room === '' && <Popover target={<li>Join Room</li>} content={<JoinRoom joinRoom={sendJoinRoom} />}></Popover>}
-        {room !== '' && <li onClick={() => emitLeaveRoom()}>Leave Room</li>}
-        {room !== '' && <li>Room: {room}</li>}
+        {room === '' && <li data-testid="createRoomBtn" onClick={sendCreateRoom}>Create Room</li>}
+        {room === '' && <Popover data-testid="joinRoomBtn" target={<li>Join Room</li>} content={<JoinRoom joinRoom={sendJoinRoom} />}></Popover>}
+        {room !== '' && <li data-testid="leaveRoomBtn" onClick={() => emitLeaveRoom()}>Leave Room</li>}
+        {room !== '' && <li data-testid="roomName">Room: {room}</li>}
       </Header>
       <DraftBoard>
 
@@ -283,7 +328,7 @@ function App() {
         </PickContainer>
 
         <PickedContainer>
-          <Controls editMode={editMode} toggleEditMode={() => setState(state => ({ ...state, editMode: !editMode }))} undoPick={undoPick} pickHistory={pickHistory}></Controls>
+          <Controls handleBoardResults={handleBoardResults} randomizeBoard={randomizeBoard} editMode={editMode} toggleEditMode={() => setState(state => ({ ...state, editMode: !editMode }))} undoPick={undoPick} pickHistory={pickHistory} />
           <Card title="Radiant Picks" contentClass="picked-container-content">
             {[0, 2, 4, 6, 8].map(slot => {
               return (<PickedSkills key={`radiant-skills-${slot}`} slot={slot} turn={skills.filter(notNull).length > 0 ? turn : -1} skills={mapSkills(pickedSkills.slice(slot * 4, slot * 4 + 4))}></PickedSkills>)
