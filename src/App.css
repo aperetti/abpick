@@ -15,6 +15,10 @@
   background: radial-gradient(#383c48, #101318);
 }
 
+.bp3-dark .bp3-menu {
+  background-color: var(--bg-dark);
+}
+
 .App-logo {
   height: 40vmin;
   pointer-events: none;
