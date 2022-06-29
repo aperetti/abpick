@@ -264,7 +264,7 @@ function App() {
   let nonNullSkills: number[] = useMemo(() => skills.filter(notNull), [skills])
   let mappedSkills = useMemo(() => mapSkills(skills), [mapSkills, skills])
   return (
-    <div className="App bp3-dark pt-dark">
+    <div className="App bp4-dark">
       <Header logo={Logo}>
         {room === '' && <li data-testid="createRoomBtn" onClick={sendCreateRoom}>Create Room</li>}
         {room === '' && <Popover data-testid="joinRoomBtn" target={<li>Join Room</li>} content={<JoinRoom joinRoom={sendJoinRoom} />}></Popover>}

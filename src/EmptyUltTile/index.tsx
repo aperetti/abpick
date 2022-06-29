@@ -71,7 +71,7 @@ function EmptyUltTile(props: PropsWithChildren<Props>) {
 
   return (
     (ultimates.length >= 0 && <UltSelect
-      className="bp3-dark"
+      className="bp4-dark"
       items={ultimates}
       itemPredicate={predicateUlt}
       itemRenderer={renderUlt}

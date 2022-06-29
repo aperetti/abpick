@@ -60,7 +60,7 @@ function HeroSearch(props: PropsWithChildren<Props>) {
 
   return (
     (<HeroSuggest
-      className="bp3-dark"
+      className="bp4-dark"
       items={ultimates}
       itemListPredicate={predicateUlts}
       itemRenderer={renderUlt}

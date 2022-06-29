@@ -22,7 +22,7 @@ function SkillTile(props: PropsWithChildren<Props>) {
 
   return (
     <div className={`
-      skill bp3-dark ${surviveCss ? 'skill-survive' : ''} ${winCss ? 'skill-win' : ''}`}>
+      skill bp4-dark ${surviveCss ? 'skill-survive' : ''} ${winCss ? 'skill-win' : ''}`}>
       {pastDue && <div className='skill-badge'>{Math.round(turn-skill.stats.mean)}</div>}
       <Popover hoverOpenDelay={100} minimal hoverCloseDelay={0} interactionKind='hover-target' content={<SkillDetails skill={skill} ></SkillDetails>} target={<SkillImage onClick={onClick} skill={skill} picked={picked} />} />
     </div>
