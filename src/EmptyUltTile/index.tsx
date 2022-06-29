@@ -1,7 +1,7 @@
 import React, { PropsWithChildren } from 'react';
 import './index.css';
 import Ultimate from '../types/Ultimate';
-import { Select, ItemRenderer, ItemPredicate } from '@blueprintjs/select'
+import { Select2, ItemRenderer, ItemPredicate } from '@blueprintjs/select'
 import { MenuItem } from '@blueprintjs/core'
 import fuzzy from 'fuzzy'
 import Skill from '../types/Skill';
@@ -9,12 +9,12 @@ import SkillImage from '../SkillImage'
 
 interface Props {
   ultimates: Ultimate[]
-  setHero: (id: number, slot: number) => void
+  setHero: (ult: Ultimate, slot: number) => void
   slot: number
   skill: Skill | null
 }
 
-const UltSelect = Select.ofType<Ultimate>();
+const UltSelect = Select2.ofType<Ultimate>();
 
 const renderString = (strings: string[]) => {
   return (
@@ -44,7 +44,7 @@ const renderUlt: ItemRenderer<Ultimate> = (ultimate, { handleClick, modifiers, q
     stringsHero = matchHero.rendered.split("##")
     renderedStringHero = renderString(stringsHero)
   } else {
-    renderedString = <p>{ultimate.heroName}</p>
+    renderedStringHero = <p>{ultimate.heroName}</p>
   }
 
 
@@ -75,8 +75,7 @@ function EmptyUltTile(props: PropsWithChildren<Props>) {
       items={ultimates}
       itemPredicate={predicateUlt}
       itemRenderer={renderUlt}
-      popoverProps={{ minimal: true }}
-      onItemSelect={(ult: Ultimate) => setHero(ult.heroId, slot)}
+      onItemSelect={(ult: Ultimate) => setHero(ult, slot)}
       noResults={<MenuItem disabled={true} text="No results." />}>
       <div data-testid={`emptyUltTile${slot}`} className="ult-skill-empty skill">{skill && <SkillImage skill={skill} edit />}</div>
 

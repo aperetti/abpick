@@ -3,16 +3,18 @@
   --bg-dark: #16171a;
   --bg-dark-transparent: rgba(22, 23, 26, .5);
   --bg-norm: #212226;
+  width: max-content;
 }
 
 
 .App {
   text-align: center;
   min-width: 1800px;
-  width: 100%;
+  /* width: 100%; */
   height: 100%;
   min-height: 1000px;
   background: radial-gradient(#383c48, #101318);
+  color: darkgray
 }
 
 .bp3-dark .bp3-menu {
@@ -63,10 +65,10 @@
 .picked-container-content {
   display: grid;
   grid-template-rows: repeat(5, auto);
-  gap: 15px;
+  grid-template-columns: 1fr;
+  gap: 8px;
   justify-content: center;
-  padding-top: 10px;
-  padding-bottom: 10px;
+  padding: 10px 10px;
 }
 
 .stat-container-content {

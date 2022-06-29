@@ -1,5 +1,6 @@
 .Survival-container {
     grid-column: 4;
     grid-row: 1 / span last-line;
+    height:800px
 }
 

@@ -8,9 +8,7 @@ client.on('disconnect', () => {
 
 export interface SocketAppState {
     skills: Array<number | null>;
-    pickedSkills: Array<number | null>;
     pickHistory: number[];
-    turn: number;
     stateId: number;
     _id: string;
     room: string;

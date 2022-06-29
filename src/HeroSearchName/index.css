@@ -1,0 +1,11 @@
+.hero-name-container {
+    box-shadow: inset 1px 1px 2px #050505;
+    cursor: pointer;
+    padding: 10px 0;
+    text-align: center;
+    background: var(--bg-dark);
+}
+
+.hero-name-contianer:hover {
+    box-shadow: inset 1px 1px 4px var(--bg-light);
+}

@@ -22,8 +22,8 @@
 }
 
 .skill-picked {
-    filter: grayscale(75%);
-    cursor: default !important; 
+    filter: grayscale(100%);
+    cursor: default !important;
 }
 
 .skill-loading {

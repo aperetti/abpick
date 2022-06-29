@@ -8,20 +8,26 @@ interface Props {
   skills: Array<Skill | null>
   slot: number;
   turn: number;
+  hero?: string;
 }
 
 function PickSkills(props: PropsWithChildren<Props>) {
-  let { skills, slot, turn } = props
+  let { skills, slot, turn, hero } = props
   return (
-    <div className={`Picked-skills ${turn === slot ? 'Picked-highlight' : ''}`}>
-      {skills.map(skill => {
-        if (skill) {
-          return <SkillTile skill={skill}></SkillTile>
-        } else {
-          return <EmptySkillTile></EmptySkillTile>
+    <div >
+      <div>
+        {hero || "--Select Hero--"}
+      </div>
+      <div className={`Picked-skills ${turn === slot ? 'Picked-highlight' : ''}`}>
+        {skills.map(skill => {
+          if (skill) {
+            return <SkillTile turn={turn} skill={skill}></SkillTile>
+          } else {
+            return <EmptySkillTile></EmptySkillTile>
+          }
+        })
         }
-      })
-      }
+      </div>
     </div>
   );
 }

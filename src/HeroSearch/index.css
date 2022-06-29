@@ -1,0 +1,29 @@
+.ult-skill-empty {
+    box-shadow: inset 1px 1px 2px #050505;
+    height: 64px;
+    width: 64px;
+    cursor: pointer;
+}
+
+.ult-skill-empty:hover {
+    box-shadow: inset 1px 1px 4px var(--bg-light);
+}
+
+.ult-empty-img {
+    opacity: .3;
+    filter: grayscale(50%)
+}
+
+.skill {
+    background: var(--bg-dark);
+    border: 1px;
+    border-radius: 1px;
+}
+
+.bp3-select-popover .bp3-menu {
+    max-height: 300px;
+    max-width: 400px;
+    overflow: auto;
+    padding: 0;
+    padding-top: 0px;
+}

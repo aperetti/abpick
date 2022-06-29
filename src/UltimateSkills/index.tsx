@@ -9,17 +9,18 @@ import { Tag } from '@blueprintjs/core';
 interface Props {
   skills: Array<Skill | null>
   ultimates: Array<Ultimate>
-  setHero: (heroId: number, slot: number) => void
+  setHero: (ult: Ultimate, slot: number) => void
   setPickedSkill: (skill: Skill) => void
   pickHistory: number[]
   editMode: boolean
+  turn: number
 }
 
-const slotLookup = [0, 1, 2, 9, 10, 11, 3, 4, 5, 8, 7, 6]
+const slotLookup = [0, 1, 2, 9, 10, 11, 3, 4, 5, 6, 7, 8]
 
 function UltimateSkills(props: PropsWithChildren<Props>) {
-  let { skills, ultimates, setHero, setPickedSkill, pickHistory, editMode } = props
-  let [help, setHelp] = useState(true)
+  let { skills, ultimates, setHero, setPickedSkill, pickHistory, editMode, turn } = props
+  let [help, setHelp] = useState(false)
   return (
     <div className="Ultimate-content">
       <div className="Ultimate-skills">
@@ -27,7 +28,7 @@ function UltimateSkills(props: PropsWithChildren<Props>) {
           if (!skill || editMode) {
             return <EmptyUltTile skill={skill} setHero={setHero} key={i} ultimates={ultimates} slot={slotLookup[i]}></EmptyUltTile>
           } else {
-            return <SkillTile data-testid={`ultSkillTile${i}`} picked={pickHistory.includes(skill.abilityId)} onClick={() => setPickedSkill(skill)} skill={skill}></SkillTile>
+            return <SkillTile turn={turn} data-testid={`ultSkillTile${i}`} picked={pickHistory.includes(skill.abilityId)} onClick={() => setPickedSkill(skill)} skill={skill}></SkillTile>
           }
         })}
       </div>

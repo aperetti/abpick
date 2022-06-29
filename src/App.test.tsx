@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, fireEvent, wait, act } from '@testing-library/react';
+import { render, fireEvent, waitFor, act } from '@testing-library/react';
 import App from './App';
 import { WatchIgnorePlugin } from 'webpack';
 
@@ -8,9 +8,9 @@ test('test create room', async () => {
   const { getByText, getByTestId } = render(<App />);
   let createRoom = getByTestId('createRoomBtn')
   fireEvent.click(createRoom)
-  await wait(() => {
+  await waitFor(() => {
     expect(getByTestId('roomName')).toBeInTheDocument()
-  }, 1000)
+  })
 })
 
 test('select ultimate', async () => {
@@ -20,7 +20,7 @@ test('select ultimate', async () => {
     fireEvent.click(getByTestId('emptyUltTile0'))
     fireEvent.click(getByTestId('ultSelect5006'))
   })
-  await wait(() => {
+  await waitFor(() => {
     expect(getByTestId(''))
   })
 })

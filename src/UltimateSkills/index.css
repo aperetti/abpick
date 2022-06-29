@@ -25,3 +25,7 @@
     align-items: center;
     justify-content: center;
 }
+
+.bp4-popover2-arrow > * {
+    visibility: hidden;
+}

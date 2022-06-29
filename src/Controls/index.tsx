@@ -1,15 +1,11 @@
 import React, { PropsWithChildren, useRef, ChangeEvent } from 'react';
 import './index.css';
 import Card from '../Card';
-import { Icon, Popover, Menu, MenuItem, Toast } from '@blueprintjs/core';
+import { Icon, Popover, Menu, MenuItem } from '@blueprintjs/core';
 import Compressor from 'compressorjs'
 import postBoard from '../api/postBoard'
 import Toaster from '../Toaster'
 interface Props {
-  undoPick: () => void
-  toggleEditMode: () => void
-  editMode: boolean
-  pickHistory: number[]
   randomizeBoard: () => void
   handleBoardResults: (results: Array<number>) => void
 }
@@ -17,7 +13,7 @@ interface Props {
 const handleUpload = (handleBoardResults: (results: Array<number>) => void) => (evt: ChangeEvent<HTMLInputElement>) => {
   if (!evt.target.files)
     return
-  
+
   Toaster.show({ icon: 'cloud-upload', message: "Uploading file...", intent: 'none' }, 'upload')
   const file = evt.target.files[0]
   new Compressor(file, {
@@ -30,7 +26,7 @@ const handleUpload = (handleBoardResults: (results: Array<number>) => void) => (
       if (res.result) {
         handleBoardResults(res.result)
         Toaster.dismiss('upload')
-        Toaster.show({ icon: 'confirm', message: "Upload success! Loading skills now!", timeout: 2000})
+        Toaster.show({ icon: 'confirm', message: "Upload success! Loading skills now!", timeout: 2000 })
       }
       if (res.error) {
         Toaster.dismiss('upload')
@@ -44,19 +40,13 @@ const handleUpload = (handleBoardResults: (results: Array<number>) => void) => (
 }
 
 function Controls(props: PropsWithChildren<Props>) {
-  let { undoPick, pickHistory, editMode, toggleEditMode, randomizeBoard, handleBoardResults } = props
+  let { randomizeBoard, handleBoardResults } = props
   const uploadRef = useRef<HTMLInputElement>(null)
   return (
     <div className='Controls-container'>
       <input ref={uploadRef} id="uploader" type='file' hidden onChange={handleUpload(handleBoardResults)} accept="image/*" />
       <Card title="Controls">
         <div className='Controls-actions'>
-          <div onClick={() => undoPick()} className={`${pickHistory.length > 0 ? 'Controls-action' : 'Controls-action-disabled'}`}>
-            <Icon color={`${pickHistory.length > 0 ? 'darkgrey' : 'var(--bg-dark)'}`} iconSize={40} icon='undo' />
-          </div>
-          <div onClick={() => toggleEditMode()} className={`${editMode ? 'Controls-action-active' : ''} Controls-action`}>
-            <Icon color={`${editMode ? 'darkgrey' : 'var(--bg-dark)'}`} iconSize={40} icon='edit' />
-          </div>
           <Popover
             className='Controls-action'
             target={
