@@ -4,12 +4,8 @@
     width: 64px;
 }
 
-.skill {
-    background: var(--bg-dark);
-    border: 1px;
-    border-radius: 2px;
-    height: 64px;
-    width: 64px;
+.skill > img {
+    width: inherit;
 }
 
 .skill-edit {

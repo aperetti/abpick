@@ -1,6 +1,5 @@
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useCallback, useMemo, useRef, Ref } from 'react';
 import { useCookies } from 'react-cookie'
-import { useDebounce } from 'use-debounce'
 import { emitCreateRoom, emitJoinRoom, emitLeaveRoom, onRoomJoined, emitUpdateState, onStateUpdate, SocketAppState, onRoomLeft } from './socket'
 import './App.css';
 import ConsoleParser from './ConsoleParser';
@@ -90,11 +89,10 @@ function shuffle<T>(array: Array<T>): Array<T> {
 
 
 function App() {
-  const slotLookup = [0, 1, 2, 3, 4, 9, 10, 11, 8, 7]
+  const slotLookup = useMemo(() => [0, 1, 2, 3, 4, 9, 10, 11, 8, 7], [])
   const ultLu = [0, 11, 1, 10, 2, 9, 3, 8, 4, 7, 5, 6]
   let [state, setState] = useState<State>(initialState)
   let { skillDict, skills, ultimates, room, pickHistory, editMode, heroSlot, heroDict } = state
-  let [debounceChange] = useDebounce(state.changeId, 200)
   const [cookies, setCookie, removeCookie] = useCookies(['room']);
 
   const mapSkills = useCallback((skillIds: Array<number | null>): Array<Skill | null> => {
@@ -102,13 +100,6 @@ function App() {
       return (skillId && { id: skillId, ...skillDict[skillId] }) || null
     })
   }, [skillDict])
-
-  const mapSkillsNoNulls = useCallback((skillIds: Array<number | null>): Skill[] => {
-    return skillIds.filter((el): el is number => el !== null).map(skillId => {
-      return { id: skillId, ...skillDict[skillId] } || null
-    })
-  }, [skillDict])
-
 
   const getSocketState = useCallback((state: State): SocketAppState => {
     let { pickHistory, skills, stateId, room, roomId } = state
@@ -170,18 +161,6 @@ function App() {
     }
   }, [])
 
-  const calculateTurn = useCallback((picked: NullableSkillList) => {
-    let turnCalc = picked.filter(notNull).length % 20
-    if (turnCalc > 9) {
-      return 19 - turnCalc
-    }
-    else {
-      return turnCalc
-    }
-  }, [])
-
-
-
   const handleBoardResults = useCallback((newUlts: Array<number>) => {
 
     const slotLookup = [0, 1, 2, 6, 7, 8, 11, 10, 9, 3, 4, 5]
@@ -202,20 +181,21 @@ function App() {
       console.log(slot)
       let skillResponse = heroDict[ult.heroId]
       let newHeroSlot = [...state.heroSlot]
-      let newSkillDict = {...state.skillDict, ...mapSkillListToDict(skillResponse)}
+      let newSkillDict = { ...state.skillDict, ...mapSkillListToDict(skillResponse) }
       let newSkills = [...state.skills]
 
       newHeroSlot[slot] = ult.heroName
       newSkills.splice(slot * 4, 4, ...skillResponse.map(el => el.abilityId))
 
       return ({
-      ...state,
-      heroSlot: newHeroSlot,
-      activeSlot: state.activeSlot + 1,
-      skills: newSkills,
-      skillDict: newSkillDict,
-      changeId: state.changeId + 1
-    })})
+        ...state,
+        heroSlot: newHeroSlot,
+        activeSlot: state.activeSlot + 1,
+        skills: newSkills,
+        skillDict: newSkillDict,
+        changeId: state.changeId + 1
+      })
+    })
   }, [mapSkillListToDict, heroDict])
 
 
@@ -258,11 +238,11 @@ function App() {
     if (cookies.room) {
       emitJoinRoom(cookies.room)
     }
-  }, [])
+  }, [cookies.room, mergeState, setCookie, removeCookie])
 
   useEffect(() => {
     sendNewState()
-  }, [debounceChange])
+  }, [sendNewState])
 
   let submitConsole = useCallback(async (consoleText: string) => {
     let parsedSkills = await parseConsole(consoleText)
@@ -277,13 +257,12 @@ function App() {
       skillDict: { ...state.skillDict, ...skillDictUpdate },
       changeId: state.changeId + 1
     }))
-  }, [mapSkillListToDict, skills])
+  }, [mapSkillListToDict, skills, slotLookup])
 
   let turn = useMemo(() => pickHistory.length, [pickHistory])
   let filteredUlts = useMemo(() => ultimates.filter(ult => !skills.includes(ult.abilityId)), [ultimates, skills])
   let nonNullSkills: number[] = useMemo(() => skills.filter(notNull), [skills])
   let mappedSkills = useMemo(() => mapSkills(skills), [mapSkills, skills])
-
   return (
     <div className="App bp3-dark pt-dark">
       <Header logo={Logo}>
