@@ -1,67 +1,21 @@
-import React, { PropsWithChildren, useRef, ChangeEvent } from 'react';
+import React, { PropsWithChildren} from 'react';
 import './index.css';
-import Card from '../Card';
-import { Icon, Popover, Menu, MenuItem } from '@blueprintjs/core';
-import Compressor from 'compressorjs'
-import postBoard from '../api/postBoard'
-import Toaster from '../Toaster'
+import { Menu, MenuItem } from '@blueprintjs/core';
+import { Popover2 } from '@blueprintjs/popover2';
 interface Props {
   randomizeBoard: () => void
-  handleBoardResults: (results: Array<number>) => void
-}
-
-const handleUpload = (handleBoardResults: (results: Array<number>) => void) => (evt: ChangeEvent<HTMLInputElement>) => {
-  if (!evt.target.files)
-    return
-
-  Toaster.show({ icon: 'cloud-upload', message: "Uploading file...", intent: 'none' }, 'upload')
-  const file = evt.target.files[0]
-  new Compressor(file, {
-    quality: 0.6,
-    async success(result: File) {
-      const formData = new FormData();
-
-      formData.append('file', result, result.name);
-      const res = await postBoard(formData)
-      if (res.result) {
-        handleBoardResults(res.result)
-        Toaster.dismiss('upload')
-        Toaster.show({ icon: 'confirm', message: "Upload success! Loading skills now!", timeout: 2000 })
-      }
-      if (res.error) {
-        Toaster.dismiss('upload')
-        Toaster.show({ icon: 'error', message: res.error, intent: 'danger' })
-      }
-    },
-    error(err) {
-      console.log(err.message);
-    },
-  })
 }
 
 function Controls(props: PropsWithChildren<Props>) {
-  let { randomizeBoard, handleBoardResults } = props
-  const uploadRef = useRef<HTMLInputElement>(null)
+  let { randomizeBoard } = props
   return (
-    <div className='Controls-container'>
-      <input ref={uploadRef} id="uploader" type='file' hidden onChange={handleUpload(handleBoardResults)} accept="image/*" />
-      <Card title="Controls">
-        <div className='Controls-actions'>
-          <Popover
-            className='Controls-action'
-            target={
-              <Icon color={'var(--bg-dark'} iconSize={40} icon='settings' />
-            }
+          <Popover2
             content={
               <Menu>
                 <MenuItem icon="random" label="Randomize Board" onClick={randomizeBoard} />
-                <MenuItem icon="cloud-upload" label="Upload Draft Board" onClick={() => uploadRef.current?.click()} />
               </Menu>
             }
-          />
-        </div>
-      </Card>
-    </div>
+          ><li>Extras</li></Popover2>
   );
 }
 

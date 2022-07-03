@@ -3,7 +3,7 @@ import './index.css';
 
 interface Props {
   onClick: () => void,
-  hero: string,
+  hero: string | null,
 }
 
 

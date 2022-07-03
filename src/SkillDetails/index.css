@@ -28,6 +28,13 @@
     color: darkgray;
 }
 
+.skill-subtitle {
+    margin-top: 5px;
+    font-weight: bold;
+    font-size: 16px;
+    color: darkgray;
+}
+
 .skill-graph-title {
     color: white;
     font-weight: 400;

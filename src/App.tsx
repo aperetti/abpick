@@ -1,8 +1,7 @@
-import React, { useState, useEffect, useCallback, useMemo, useRef, Ref } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useCookies } from 'react-cookie'
-import { emitCreateRoom, emitJoinRoom, emitLeaveRoom, onRoomJoined, emitUpdateState, onStateUpdate, SocketAppState, onRoomLeft } from './socket'
+import { emitCreateRoom, emitJoinRoom, emitLeaveRoom, onRoomJoined, emitUpdateState, onStateUpdate, SocketAppState, onRoomLeft, resetListeners } from './socket'
 import './App.css';
-import ConsoleParser from './ConsoleParser';
 import DraftBoard from './DraftBoard'
 import UltimateContainer from './UltimateContainer'
 import UltimateSkills from './UltimateSkills'
@@ -12,29 +11,31 @@ import Logo from './logo512.png'
 import PickContainer from './PickContainer';
 import PickedContainer from './PickedContainer';
 import getUltimates from './api/getUltimate';
-import parseConsole from './api/parseConsole';
 import Ultimate from './types/Ultimate'
 import Skill from './types/Skill';
 import PickSkills from './PickSkills';
 import SurvivalContainer from './SurvivalContainer';
 import Controls from './Controls'
-import { Popover } from '@blueprintjs/core'
 import JoinRoom from './JoinRoom';
 import HeroSearch from './HeroSearch';
 import SkillDatatable from './SkillDatatable';
 import getAllSkills from './api/getAllSkills';
 import HeroDict from './types/HeroDict';
 import HeroSearchName from './HeroSearchName';
+import { Popover2 } from '@blueprintjs/popover2';
+import PlayerSkillContainer from './PlayerSkillContainer';
+import SkillTile from './SkillTile';
+import EmptySkillTile from './EmptySkillTile';
+import predict from './api/predict';
 
 export type SkillDict = Record<number, Skill>
 export type NullableSkillList = Array<number | null>
 export interface State {
-  hoverSkills: number[],
+  playerSkills: number[],
   heroDict: HeroDict,
   skillDict: SkillDict,
   skills: NullableSkillList,
   ultimates: Ultimate[],
-  heroSlot: string[];
   activeSlot: number,
   room: string,
   roomId: string,
@@ -43,19 +44,22 @@ export interface State {
   pickHistory: number[],
   changeId: number,
   editMode: boolean
+  skillsHydrated: boolean,
+  ultimatesHydrated: boolean
 }
 
 let initialState: State = {
-  hoverSkills: [],
+  playerSkills: [],
   heroDict: {},
   skillDict: {},
   skills: Array(48).fill(null),
-  heroSlot: [],
   ultimates: [],
   activeSlot: 0,
   room: '',
   roomId: '',
   loading: false,
+  skillsHydrated: false,
+  ultimatesHydrated: false,
   stateId: 0,
   pickHistory: [],
   changeId: 0,
@@ -89,15 +93,14 @@ function shuffle<T>(array: Array<T>): Array<T> {
 
 
 function App() {
-  const slotLookup = useMemo(() => [0, 1, 2, 3, 4, 9, 10, 11, 8, 7], [])
   const ultLu = [0, 11, 1, 10, 2, 9, 3, 8, 4, 7, 5, 6]
   let [state, setState] = useState<State>(initialState)
-  let { skillDict, skills, ultimates, room, pickHistory, editMode, heroSlot, heroDict } = state
+  let { skillDict, skills, ultimates, room, pickHistory, editMode, heroDict } = state
   const [cookies, setCookie, removeCookie] = useCookies(['room']);
 
   const mapSkills = useCallback((skillIds: Array<number | null>): Array<Skill | null> => {
     return skillIds.map(skillId => {
-      return (skillId && { id: skillId, ...skillDict[skillId] }) || null
+      return (skillId && skillDict[skillId] && { id: skillId, ...skillDict[skillId] }) || null
     })
   }, [skillDict])
 
@@ -109,14 +112,23 @@ function App() {
   }, [])
 
   const sendNewState = useCallback(() => {
-    if (room === '')
-      return
     setState(state => {
+      if (room === '')
+        return state
       let newState = { ...state, stateId: state.stateId + 1 }
       emitUpdateState(getSocketState(newState));
       return newState
     })
   }, [room, getSocketState])
+
+  useEffect(() => sendNewState(), [state.changeId, sendNewState])
+
+  useEffect(() => {
+    let availableSkills = state.skills.filter(el => !el || !state.pickHistory.includes(el)).filter(notNull)
+    if (state.playerSkills.filter(el => el).length > 0)
+      predict(state.playerSkills, availableSkills, setState)
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [state.playerSkills])
 
   const sendCreateRoom = useCallback(() => {
     setState(state => {
@@ -134,20 +146,13 @@ function App() {
     })
   }, [])
 
-  const mapSkillListToDict = useCallback((skills: Array<Skill>): SkillDict => {
-    let skillDictUpdate: SkillDict = {}
-    skills.forEach(el => {
-      skillDictUpdate[el.abilityId] = el
-    })
-    return skillDictUpdate
-  }, [])
-
   const mergeState = useCallback(async (socketState: SocketAppState) => {
     setState(state => ({ ...state, loading: true }))
+    console.log("updatingSocketState")
     try {
       setState(state => {
-        if (state.stateId >= socketState.stateId)
-          return state
+        // if (state.stateId >= socketState.stateId)
+        //   return state
         return {
           ...state,
           skills: socketState.skills,
@@ -161,68 +166,78 @@ function App() {
     }
   }, [])
 
-  const handleBoardResults = useCallback((newUlts: Array<number>) => {
-
-    const slotLookup = [0, 1, 2, 6, 7, 8, 11, 10, 9, 3, 4, 5]
-    let newSkills = slotLookup
-      .map(el => newUlts[el])
-      .map(el => ultimates.find(ult => ult.abilityId === el))
-      .reduce((prevSkills: NullableSkillList, ult) => {
-        if (ult === undefined)
-          return [...prevSkills, null, null, null, null]
-        else
-          return [...prevSkills, ...ult.heroAbilities]
-      }, [])
-    setState(state => ({ ...state, skills: newSkills }))
-  }, [ultimates])
-
   const setHero = useCallback((ult: Ultimate, slot: number) => {
     setState(state => {
-      console.log(slot)
       let skillResponse = heroDict[ult.heroId]
-      let newHeroSlot = [...state.heroSlot]
-      let newSkillDict = { ...state.skillDict, ...mapSkillListToDict(skillResponse) }
       let newSkills = [...state.skills]
 
-      newHeroSlot[slot] = ult.heroName
       newSkills.splice(slot * 4, 4, ...skillResponse.map(el => el.abilityId))
 
       return ({
         ...state,
-        heroSlot: newHeroSlot,
         activeSlot: state.activeSlot + 1,
         skills: newSkills,
-        skillDict: newSkillDict,
         changeId: state.changeId + 1
       })
     })
-  }, [mapSkillListToDict, heroDict])
+  }, [heroDict])
 
 
   const randomizeBoard = useCallback(() => {
     shuffle(ultimates).slice(0, 12).forEach((ult, i) => setHero(ult, i))
-  }, [setHero, ultimates])
-
-  const setPickedSkill = useCallback((skill: Skill) => {
-    let newPickHistory = [...pickHistory]
-    if (pickHistory.includes(skill.abilityId)) {
-      newPickHistory.filter(el => el !== skill.abilityId)
-    } else {
-      newPickHistory.push(skill.abilityId)
-    }
     setState(state => ({
       ...state,
-      pickHistory: newPickHistory,
-      changeId: state.changeId + 1
+      pickHistory: []
     }))
-  }, [pickHistory])
+  }, [setHero, ultimates])
 
+  const setPickedSkill = useCallback((skill: Skill) => (ctrl: boolean) => {
+    setState(state => {
+      let newPickHistory = [...state.pickHistory]
+      let newPlayerSkills = [...state.playerSkills]
+
+      if (newPickHistory.includes(skill.abilityId)) {
+        newPickHistory = newPickHistory.filter(el => el !== skill.abilityId)
+      } else {
+        newPickHistory.push(skill.abilityId)
+      }
+
+      if (state.playerSkills.includes(skill.abilityId)) {
+        newPlayerSkills = newPlayerSkills.filter(el => el !== skill.abilityId)
+      } else {
+        if (ctrl) {
+          newPlayerSkills.push(skill.abilityId)
+        }
+      }
+
+      return {
+        ...state,
+        pickHistory: newPickHistory,
+        playerSkills: newPlayerSkills,
+        changeId: state.changeId + 1
+      }
+    })
+
+  }, [])
 
   useEffect(() => {
     getUltimates(setState)
     getAllSkills(setState)
+    onStateUpdate(mergeState)
+    resetListeners()
+  }, [mergeState])
+
+  useEffect(() => {
     onRoomLeft(() => {
-      setState(_ => initialState)
+      resetListeners()
+      setState(state => ({
+        ...state,
+        pickHistory: initialState.pickHistory,
+        playerSkills: initialState.playerSkills,
+        skills: initialState.skills,
+        room: initialState.room,
+        roomId: initialState.roomId,
+      }))
       removeCookie('room')
     })
     onRoomJoined(async (state) => {
@@ -234,46 +249,34 @@ function App() {
       }))
       await mergeState(state)
     })
-    onStateUpdate(mergeState)
     if (cookies.room) {
       emitJoinRoom(cookies.room)
     }
   }, [cookies.room, mergeState, setCookie, removeCookie])
 
-  useEffect(() => {
-    sendNewState()
-  }, [sendNewState])
-
-  let submitConsole = useCallback(async (consoleText: string) => {
-    let parsedSkills = await parseConsole(consoleText)
-    let newSkills = [...skills]
-    let skillDictUpdate = mapSkillListToDict(parsedSkills.flat())
-    parsedSkills.forEach((skills, idx) => {
-      newSkills.splice(slotLookup[idx] * 4, 4, ...skills.map(el => el.abilityId))
-    })
-    setState(state => ({
-      ...state,
-      skills: newSkills,
-      skillDict: { ...state.skillDict, ...skillDictUpdate },
-      changeId: state.changeId + 1
-    }))
-  }, [mapSkillListToDict, skills, slotLookup])
 
   let turn = useMemo(() => pickHistory.length, [pickHistory])
   let filteredUlts = useMemo(() => ultimates.filter(ult => !skills.includes(ult.abilityId)), [ultimates, skills])
-  let nonNullSkills: number[] = useMemo(() => skills.filter(notNull), [skills])
   let mappedSkills = useMemo(() => mapSkills(skills), [mapSkills, skills])
+  let heroSlot = useMemo(() => mappedSkills.reduce<Array<string | null>>((prev, curr, i) => {
+    if (i % 4 === 3) {
+      let hero = state.ultimates.find(el => el.abilityId === curr?.abilityId)?.heroName
+      return [...prev, hero || null]
+    } else {
+      return prev
+    }
+  }, []), [mappedSkills, state.ultimates])
+  let ultAndSkillLoaded = state.skillsHydrated && state.ultimatesHydrated
   return (
     <div className="App bp4-dark">
       <Header logo={Logo}>
         {room === '' && <li data-testid="createRoomBtn" onClick={sendCreateRoom}>Create Room</li>}
-        {room === '' && <Popover data-testid="joinRoomBtn" target={<li>Join Room</li>} content={<JoinRoom joinRoom={sendJoinRoom} />}></Popover>}
+        {room === '' && <Popover2 data-testid="joinRoomBtn" content={<JoinRoom joinRoom={sendJoinRoom} />}><li>Join Room</li></Popover2>}
         {room !== '' && <li data-testid="leaveRoomBtn" onClick={() => emitLeaveRoom()}>Leave Room</li>}
         {room !== '' && <li data-testid="roomName">Room: {room}</li>}
-        <li data-testid="console" onClick={() => "TODO"}><ConsoleParser submitConsole={submitConsole} /></li>
+        <Controls randomizeBoard={randomizeBoard} />
       </Header>
-      <DraftBoard>
-
+      {ultAndSkillLoaded && <DraftBoard>
         <UltimateContainer>
           <Card title="Ultimates">
             <UltimateSkills turn={turn} editMode={editMode} setPickedSkill={setPickedSkill} pickHistory={pickHistory} setHero={setHero} skills={mappedSkills} ultimates={filteredUlts} />
@@ -290,32 +293,41 @@ function App() {
         </PickContainer>
 
         <PickedContainer>
-          <Controls handleBoardResults={handleBoardResults} randomizeBoard={randomizeBoard} />
+          <div></div>
           <Card title="Radiant Team" contentClass="picked-container-content">
             {[0, 2, 4, 6, 8, 10].map(slot => {
               return (
                 (state.activeSlot === slot && <HeroSearch ultimates={state.ultimates} setHero={setHero} slot={ultLu[slot]} />) ||
-                <HeroSearchName onClick={() => setState({ ...state, activeSlot: slot })} hero={heroSlot[ultLu[slot]]} />
+                <HeroSearchName key={`hero-search-${slot}`} onClick={() => setState({ ...state, activeSlot: slot })} hero={heroSlot[ultLu[slot]]} />
               )
             })}
           </Card>
         </PickedContainer>
+
+        <PlayerSkillContainer>
+          <Card title="Player Skills (Ctrl-Click on Skill)">
+            {[0, 1, 2, 3].map(slot => {
+              let k = state.playerSkills[slot]
+              return ((k && <SkillTile skill={skillDict[k]} turn={0} />) || <EmptySkillTile />)
+            })}
+          </Card>
+        </PlayerSkillContainer>
 
         <PickedContainer right>
           <Card title="Dire Team" contentClass="picked-container-content">
             {[1, 3, 5, 7, 9, 11].map(slot => {
               return (
                 (state.activeSlot === slot && <HeroSearch ultimates={state.ultimates} setHero={setHero} slot={ultLu[slot]} />) ||
-                <HeroSearchName onClick={() => setState({ ...state, activeSlot: slot})} hero={heroSlot[ultLu[slot]]} />
+                <HeroSearchName key={`hero-search-${slot}`} onClick={() => setState({ ...state, activeSlot: slot })} hero={heroSlot[ultLu[slot]]} />
               )
             })}
           </Card>
         </PickedContainer>
 
         {skills.filter(notNull).length > 0 && <SurvivalContainer>
-          <SkillDatatable pickSkill={setPickedSkill} turn={turn} skills={mapSkills(nonNullSkills).filter(notNull).filter(filterNotPicked(pickHistory))} />
+          <SkillDatatable pickSkill={setPickedSkill} turn={turn} skills={mappedSkills.filter(notNull).filter(filterNotPicked(pickHistory))} />
         </SurvivalContainer>}
-      </DraftBoard>
+      </DraftBoard>}
     </div>
   );
 }

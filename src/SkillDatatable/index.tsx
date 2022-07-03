@@ -1,14 +1,14 @@
 import React, { PropsWithChildren, useMemo } from 'react';
 import { DataGrid, GridRenderCellParams, GridComparatorFn } from '@mui/x-data-grid';
 import { SxProps, Theme } from '@mui/system';
-import Skill from '../types/Skill'
+import Skill, {SkillClick} from '../types/Skill'
 import './index.css';
 import SkillImage from '../SkillImage';
 
 interface Props {
-  skills: Skill[]
+  skills: Array<Skill>
   turn: number
-  pickSkill: (skill: Skill) => void
+  pickSkill: SkillClick
 }
 
 
@@ -59,7 +59,7 @@ function SkillDatatable(props: PropsWithChildren<Props>) {
 
   let { skills, turn, pickSkill } = props
   let round = Math.floor(turn / 10)
-  let formattedSkills = skills.map((skill: Skill) => {
+  let formattedSkills = skills.map((skill) => {
     return {
       ...skill,
       avgPick: Number(skill.stats.mean).toFixed(0),
@@ -74,14 +74,14 @@ function SkillDatatable(props: PropsWithChildren<Props>) {
   })
 
     let columns = useMemo(() => [
-    { field: "abilityName", headerName: "Ability", renderCell: (params: GridRenderCellParams) => <SkillImage skill={params.row} onClick={() => pickSkill(params.row)} /> },
+    { field: "abilityName", headerName: "Ability", renderCell: (params: GridRenderCellParams) => <SkillImage skill={params.row} onClick={pickSkill(params.row)} /> },
     { field: "avgPick", headerName: "Average Pick", sortComparator: stringCompare },
     { field: "pickRate", headerName: "Percent Picked", sortComparator: stringCompare },
     { field: "winRate", headerName: "Win Rate", sortComparator: stringCompare },
     { field: "survival", headerName: "Survival", sortComparator: stringCompare },
     { field: "survival5", headerName: "Survival 5 Turns", sortComparator: stringCompare },
     { field: "survival10", headerName: "Survival 10 Turns", sortComparator: stringCompare }
-  ], [props])
+  ], [pickSkill])
 
   return (
     <DataGrid

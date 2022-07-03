@@ -6,6 +6,9 @@ client.on('disconnect', () => {
     timeOut = setInterval(() => client.connect(), 1000)
 })
 
+export function resetListeners() {
+    client.removeAllListeners()
+}
 export interface SocketAppState {
     skills: Array<number | null>;
     pickHistory: number[];
@@ -23,6 +26,7 @@ export let onConnect = (cb: () => void) => {
 
 
 export let onStateUpdate = (cb: (appState: SocketAppState) => void) => {
+    console.log("onStateUpdate")
     client.on('stateUpdated', cb)
 }
 
@@ -47,6 +51,7 @@ export let onRoomLeft = (cb: () => void) => {
 }
 
 export let emitUpdateState = (state: SocketAppState) => {
+    console.log("updateState")
     client.emit('updateState', state)
 }
 

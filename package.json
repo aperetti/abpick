@@ -30,7 +30,7 @@
     "victory": "^36.5.2"
   },
   "scripts": {
-    "start": "react-scripts start",
+    "start": "GENERATE_SOURCEMAP=false react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test --testURL=http://localhost:5000 ",
     "eject": "react-scripts eject"

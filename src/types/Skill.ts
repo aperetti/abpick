@@ -1,3 +1,13 @@
+
+export type SkillClick = (skill: Skill) => (ctrlClick: boolean) => void
+
+export interface Predict {
+    gold: number
+    win: number
+    damage: number
+    kills: number
+    deaths: number
+}
 interface Skill {
     abilityId: number
     abilityName: number
@@ -14,6 +24,7 @@ interface Skill {
         winRateRounds: number[]
         survival: number[]
     }
+    predict?: Predict
 }
 
 export default Skill

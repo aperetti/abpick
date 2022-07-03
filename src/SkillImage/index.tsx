@@ -4,7 +4,7 @@ import Skill from '../types/Skill';
 
 interface Props {
   skill: Skill
-  onClick?: () => void
+  onClick?: (ctrl: boolean) => void
   picked?: boolean
   edit?: boolean
 }
@@ -27,12 +27,14 @@ function SkillImage(props: PropsWithChildren<Props>) {
 
   return (
     <div className={`
-      skill bp3-dark 
-      ${picked ? 'skill-picked' : ''} 
-      ${loading ? 'skill-loading' : ''} 
+      skill bp3-dark
+      ${picked ? 'skill-picked' : ''}
+      ${loading ? 'skill-loading' : ''}
       ${onClick ? 'skill-click' : ''}
       ${edit ? 'skill-edit' : ''}`}
-      onClick={onClick}>
+      onClick={(e) => {
+        onClick && onClick(e.ctrlKey)
+      }}>
       {img && !loading && <img src={img} alt={skill.dname}></img>}
     </div>
   );

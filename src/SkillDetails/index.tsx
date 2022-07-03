@@ -34,6 +34,12 @@ function SkillDetails(props: PropsWithChildren<Props>) {
       <SkillDetail desc="Avg. Pick">{dec(skill.stats.mean, 0)}</SkillDetail>
       <SkillDetail desc="Pick Variation">{dec(skill.stats.std, 0)}</SkillDetail>
       <SkillDetail desc="Win Rate">{`${(skill.stats.winRate * 100).toFixed(1)}%`}</SkillDetail>
+      <div className="skill-subtitle">Predictions</div>
+      {skill.predict && <SkillDetail desc="Win">{`${(skill.predict.win * 100).toFixed(1)}%`}</SkillDetail>}
+      {skill.predict && <SkillDetail desc="Damage">{`${(skill.predict.damage * 45).toFixed(0)}`}</SkillDetail>}
+      {skill.predict && <SkillDetail desc="K/D">{`${(skill.predict.kills * 45).toFixed(0)}\\${(skill.predict.deaths * 45).toFixed(0)}`}</SkillDetail>}
+      {skill.predict && <SkillDetail desc="Gold">{`${(skill.predict.gold * 45).toFixed(0)}`}</SkillDetail>}
+
       <VictoryChart>
         <VictoryLabel
           textAnchor="start" verticalAnchor="middle"

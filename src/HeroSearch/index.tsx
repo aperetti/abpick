@@ -1,7 +1,7 @@
 import React, { PropsWithChildren } from 'react';
 import './index.css';
 import Ultimate from '../types/Ultimate';
-import { Suggest2, ItemRenderer, ItemPredicate, ItemListPredicate } from '@blueprintjs/select'
+import { Suggest2, ItemRenderer, ItemListPredicate } from '@blueprintjs/select'
 import { MenuItem } from '@blueprintjs/core'
 import fuzzy from 'fuzzy'
 

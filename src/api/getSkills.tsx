@@ -9,8 +9,7 @@ async function getSkills(skillIds: number[]) {
           },
         body: JSON.stringify(skillIds)
     })
-    let json: Skill[] = await res.json() 
-    console.log(json)
+    let json: Skill[] = await res.json()
     return json
 }
 
