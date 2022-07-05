@@ -1,11 +1,28 @@
 .Player-Skill-Container {
-    grid-row: 1
+    display: flex;
+    gap: 5px;
+    padding: 5px;
 }
 
-
-.Picked-container-right {
-    margin-top: 100px;
-    grid-column: 3;
-    grid-row: 1 / last-line;
+.Player-Skill-Container-Picked-Skills {
+    display: flex;
+    gap: 3px;
 
 }
+
+.player-skill-predict-label {
+    text-orientation: sideways;
+    writing-mode: sideways-lr;
+    vertical-align: middle;
+    line-height: 30px;
+    padding: 0;
+
+}
+
+.Player-Skill-Title {
+    color: darkgray;
+    font-size: 14px;
+    text-transform: uppercase;
+    padding-bottom: 5px;
+}
+

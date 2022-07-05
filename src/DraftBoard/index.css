@@ -1,11 +1,40 @@
 .Draft-board {
     margin-top: 50px;
-    margin-left: 50px;
-    margin-right: 50px;
+    padding-left: 50px;
+    padding-right: 50px;
+    width: 100%;
     padding: 0 auto;
-    display: grid;
-    grid-template-columns: 200px 450px 200px 800px;
-    grid-template-rows: auto auto;
+    display: flex;
+    flex-direction: row;
     gap: 20px;
-    margin-bottom: 50px;
+}
+
+.Draft-board > div {
+    gap: 20px;
+}
+
+.Draft-board-left {
+    display: flex;
+    flex-direction: column;
+    order: 1;
+}
+
+.Draft-board-center {
+    display: flex;
+    flex-direction: column;
+    order: 2;
+}
+
+.Draft-board-right {
+    display: flex;
+    flex-direction: column;
+    order: 3;
+}
+
+
+.Draft-board-overview {
+    display: flex;
+    flex-direction: column;
+    order: 4;
+    flex-grow: 1;
 }

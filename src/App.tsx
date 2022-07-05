@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useCookies } from 'react-cookie'
 import { emitCreateRoom, emitJoinRoom, emitLeaveRoom, onRoomJoined, emitUpdateState, onStateUpdate, SocketAppState, onRoomLeft, resetListeners } from './socket'
 import './App.css';
-import DraftBoard from './DraftBoard'
+import DraftBoard, { DraftBoardColumn } from './DraftBoard'
 import UltimateContainer from './UltimateContainer'
 import UltimateSkills from './UltimateSkills'
 import Card from './Card'
@@ -12,7 +12,7 @@ import PickContainer from './PickContainer';
 import PickedContainer from './PickedContainer';
 import getUltimates from './api/getUltimate';
 import Ultimate from './types/Ultimate'
-import Skill from './types/Skill';
+import Skill, { Predict } from './types/Skill';
 import PickSkills from './PickSkills';
 import SurvivalContainer from './SurvivalContainer';
 import Controls from './Controls'
@@ -23,7 +23,7 @@ import getAllSkills from './api/getAllSkills';
 import HeroDict from './types/HeroDict';
 import HeroSearchName from './HeroSearchName';
 import { Popover2 } from '@blueprintjs/popover2';
-import PlayerSkillContainer from './PlayerSkillContainer';
+import PlayerSkillContainer, { PlayerPickedSkills, PlayerPredictSkills, PredictLabel } from './PlayerSkillContainer';
 import SkillTile from './SkillTile';
 import EmptySkillTile from './EmptySkillTile';
 import predict from './api/predict';
@@ -125,9 +125,9 @@ function App() {
 
   useEffect(() => {
     let availableSkills = state.skills.filter(el => !el || !state.pickHistory.includes(el)).filter(notNull)
-    if (state.playerSkills.filter(el => el).length > 0)
+    // if (state.playerSkills.filter(el => el).length > 0)
       predict(state.playerSkills, availableSkills, setState)
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [state.playerSkills])
 
   const sendCreateRoom = useCallback(() => {
@@ -187,7 +187,8 @@ function App() {
     shuffle(ultimates).slice(0, 12).forEach((ult, i) => setHero(ult, i))
     setState(state => ({
       ...state,
-      pickHistory: []
+      pickHistory: [],
+      playerSkills: []
     }))
   }, [setHero, ultimates])
 
@@ -267,6 +268,39 @@ function App() {
     }
   }, []), [mappedSkills, state.ultimates])
   let ultAndSkillLoaded = state.skillsHydrated && state.ultimatesHydrated
+  let predictReducer = useCallback((metric: keyof Predict, pickHistory: number[], max: boolean) => (prevSkill: Skill | null, skill: Skill) => {
+    if (!prevSkill && skill.predict)
+      return skill
+
+    let prevMetric = 0
+    if (prevSkill?.predict)
+      prevMetric = prevSkill.predict[metric]
+
+    let newMetric = 0
+    if (skill.predict)
+      newMetric = skill.predict[metric]
+
+    if (!pickHistory.includes(skill?.abilityId)) {
+      if (max && newMetric > prevMetric) {
+        return skill
+      } else if (!max && newMetric < prevMetric) {
+        return skill
+      } else {
+        return prevSkill
+      }
+    } else {
+      return prevSkill
+    }
+  }, [])
+
+  let goldPredictSkill = useMemo(() => mappedSkills.filter(notNull).reduce<Skill | null>(predictReducer('gold', pickHistory, true), null),
+    [mappedSkills, pickHistory, predictReducer])
+  let damagePredictSkill = useMemo(() => mappedSkills.filter(notNull).reduce<Skill | null>(predictReducer('damage', pickHistory, true), null),
+    [mappedSkills, pickHistory, predictReducer])
+  let winPredictSkill = useMemo(() => mappedSkills.filter(notNull).reduce<Skill | null>(predictReducer('win', pickHistory, true), null),
+    [mappedSkills, pickHistory, predictReducer])
+
+
   return (
     <div className="App bp4-dark">
       <Header logo={Logo}>
@@ -277,56 +311,76 @@ function App() {
         <Controls randomizeBoard={randomizeBoard} />
       </Header>
       {ultAndSkillLoaded && <DraftBoard>
-        <UltimateContainer>
-          <Card title="Ultimates">
-            <UltimateSkills turn={turn} editMode={editMode} setPickedSkill={setPickedSkill} pickHistory={pickHistory} setHero={setHero} skills={mappedSkills} ultimates={filteredUlts} />
-          </Card>
-        </UltimateContainer>
-
-        <PickContainer>
-          <Card title="Standard Abilities" contentClass="pick-container-content">
-            {[0, 11, 1, 10, 2, 9, 3, 8, 4, 7, 5, 6].map(slot => {
-              return (
-                <PickSkills turn={turn} key={`standard-abilities-${slot}`} setPickedSkill={setPickedSkill} pickHistory={pickHistory} slot={slot} skills={mappedSkills.slice(slot * 4, slot * 4 + 3)} />)
-            })}
-          </Card>
-        </PickContainer>
-
-        <PickedContainer>
-          <div></div>
-          <Card title="Radiant Team" contentClass="picked-container-content">
-            {[0, 2, 4, 6, 8, 10].map(slot => {
-              return (
-                (state.activeSlot === slot && <HeroSearch ultimates={state.ultimates} setHero={setHero} slot={ultLu[slot]} />) ||
-                <HeroSearchName key={`hero-search-${slot}`} onClick={() => setState({ ...state, activeSlot: slot })} hero={heroSlot[ultLu[slot]]} />
-              )
-            })}
-          </Card>
-        </PickedContainer>
-
-        <PlayerSkillContainer>
+        <DraftBoardColumn location={'center'}>
           <Card title="Player Skills (Ctrl-Click on Skill)">
-            {[0, 1, 2, 3].map(slot => {
-              let k = state.playerSkills[slot]
-              return ((k && <SkillTile skill={skillDict[k]} turn={0} />) || <EmptySkillTile />)
-            })}
+            <PlayerSkillContainer>
+              <PlayerPickedSkills>
+                {[0, 1, 2].map(slot => {
+                  let k = state.playerSkills[slot]
+                  return ((k && <SkillTile skill={skillDict[k]} turn={0} />) || <EmptySkillTile />)
+                })}
+              </PlayerPickedSkills>
+              <PredictLabel />
+              <PlayerPredictSkills category='Win'>
+                {(winPredictSkill && <SkillTile skill={winPredictSkill} turn={0} />) || <EmptySkillTile />}
+              </PlayerPredictSkills>
+              <PlayerPredictSkills category='Damage'>
+                {(damagePredictSkill && <SkillTile skill={damagePredictSkill} turn={0} />) || <EmptySkillTile />}
+              </PlayerPredictSkills>
+              <PlayerPredictSkills category='Gold'>
+                {(goldPredictSkill && <SkillTile skill={goldPredictSkill} turn={0} />) || <EmptySkillTile />}
+              </PlayerPredictSkills>
+            </PlayerSkillContainer>
           </Card>
-        </PlayerSkillContainer>
 
-        <PickedContainer right>
-          <Card title="Dire Team" contentClass="picked-container-content">
-            {[1, 3, 5, 7, 9, 11].map(slot => {
-              return (
-                (state.activeSlot === slot && <HeroSearch ultimates={state.ultimates} setHero={setHero} slot={ultLu[slot]} />) ||
-                <HeroSearchName key={`hero-search-${slot}`} onClick={() => setState({ ...state, activeSlot: slot })} hero={heroSlot[ultLu[slot]]} />
-              )
-            })}
-          </Card>
-        </PickedContainer>
+          <UltimateContainer>
+            <Card title="Ultimates">
+              <UltimateSkills turn={turn} editMode={editMode} setPickedSkill={setPickedSkill} pickHistory={pickHistory} setHero={setHero} skills={mappedSkills} ultimates={filteredUlts} />
+            </Card>
+          </UltimateContainer>
 
-        {skills.filter(notNull).length > 0 && <SurvivalContainer>
-          <SkillDatatable pickSkill={setPickedSkill} turn={turn} skills={mappedSkills.filter(notNull).filter(filterNotPicked(pickHistory))} />
-        </SurvivalContainer>}
+          <PickContainer>
+            <Card title="Standard Abilities" contentClass="pick-container-content">
+              {[0, 11, 1, 10, 2, 9, 3, 8, 4, 7, 5, 6].map(slot => {
+                return (
+                  <PickSkills turn={turn} key={`standard-abilities-${slot}`} setPickedSkill={setPickedSkill} pickHistory={pickHistory} slot={slot} skills={mappedSkills.slice(slot * 4, slot * 4 + 3)} />)
+              })}
+            </Card>
+          </PickContainer>
+        </DraftBoardColumn>
+
+        <DraftBoardColumn location={'left'}>
+          <PickedContainer>
+            <div></div>
+            <Card title="Radiant Team" contentClass="picked-container-content">
+              {[0, 2, 4, 6, 8, 10].map(slot => {
+                return (
+                  (state.activeSlot === slot && <HeroSearch ultimates={state.ultimates} setHero={setHero} slot={ultLu[slot]} />) ||
+                  <HeroSearchName key={`hero-search-${slot}`} onClick={() => setState({ ...state, activeSlot: slot })} hero={heroSlot[ultLu[slot]]} />
+                )
+              })}
+            </Card>
+          </PickedContainer>
+        </DraftBoardColumn>
+
+        <DraftBoardColumn location={'right'}>
+          <PickedContainer right>
+            <Card title="Dire Team" contentClass="picked-container-content">
+              {[1, 3, 5, 7, 9, 11].map(slot => {
+                return (
+                  (state.activeSlot === slot && <HeroSearch ultimates={state.ultimates} setHero={setHero} slot={ultLu[slot]} />) ||
+                  <HeroSearchName key={`hero-search-${slot}`} onClick={() => setState({ ...state, activeSlot: slot })} hero={heroSlot[ultLu[slot]]} />
+                )
+              })}
+            </Card>
+          </PickedContainer>
+        </DraftBoardColumn>
+
+        <DraftBoardColumn location='overview'>
+          {skills.filter(notNull).length > 0 && <SurvivalContainer>
+            <SkillDatatable pickSkill={setPickedSkill} turn={turn} skills={mappedSkills.filter(notNull).filter(filterNotPicked(pickHistory))} />
+          </SurvivalContainer>}
+        </DraftBoardColumn>
       </DraftBoard>}
     </div>
   );
