@@ -9,9 +9,10 @@ import SkillImage from '../SkillImage'
 
 interface Props {
   ultimates: Ultimate[]
-  setHero: (ult: Ultimate, slot: number) => void
+  setHero: (ult: Ultimate, slot: number, ultOnly?: boolean) => void
   slot: number
   skill: Skill | null
+  ultOnly: boolean
 }
 
 const UltSelect = Select2.ofType<Ultimate>();
@@ -67,7 +68,7 @@ const predicateUlt: ItemPredicate<Ultimate> = (query, ultimate) => {
 
 
 function EmptyUltTile(props: PropsWithChildren<Props>) {
-  let { ultimates, setHero, slot, skill } = props
+  let { ultimates, setHero, slot, skill, ultOnly} = props
 
   return (
     (ultimates.length >= 0 && <UltSelect
@@ -75,7 +76,7 @@ function EmptyUltTile(props: PropsWithChildren<Props>) {
       items={ultimates}
       itemPredicate={predicateUlt}
       itemRenderer={renderUlt}
-      onItemSelect={(ult: Ultimate) => setHero(ult, slot)}
+      onItemSelect={(ult: Ultimate) => setHero(ult, slot, ultOnly)}
       noResults={<MenuItem disabled={true} text="No results." />}>
       <div data-testid={`emptyUltTile${slot}`} className="ult-skill-empty skill">{skill && <SkillImage skill={skill} edit />}</div>
 

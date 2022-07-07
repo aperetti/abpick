@@ -26,8 +26,9 @@ function UltimateSkills(props: PropsWithChildren<Props>) {
     <div className="Ultimate-content">
       <div className="Ultimate-skills">
         {slotLookup.map(idx => skills[idx * 4 + 3]).map((skill, i) => {
-          if (!skill || editMode) {
-            return <EmptyUltTile skill={skill} setHero={setHero} key={i} ultimates={ultimates} slot={slotLookup[i]}></EmptyUltTile>
+          let ultOnly = skill && skill.abilityId === -1 ? true : false
+          if (!skill || editMode || ultOnly) {
+            return <EmptyUltTile ultOnly={ultOnly} skill={skill} setHero={setHero} key={`empty-skill-${i}`} ultimates={ultimates} slot={slotLookup[i]}></EmptyUltTile>
           } else {
             return <SkillTile turn={turn} data-testid={`ultSkillTile${i}`} picked={pickHistory.includes(skill.abilityId)} onClick={setPickedSkill(skill)} skill={skill}></SkillTile>
           }

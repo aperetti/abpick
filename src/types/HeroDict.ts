@@ -1,7 +1,7 @@
 import Skill from './Skill'
 
-interface HeroDict {
+interface HeroSkillDict {
     [heroId: string]: Skill[]
 }
 
-export default HeroDict
+export default HeroSkillDict

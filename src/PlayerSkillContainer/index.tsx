@@ -25,7 +25,7 @@ export function PlayerPickedSkills(props: PropsWithChildren<Props>) {
 
 export function PredictLabel(props: PropsWithChildren<Props>) {
 return (
-  <div className="card-title player-skill-predict-label" style={{justifyContent: 'center', textOrientation: "upright", writingMode:"sideways-lr"}}>Predict</div>
+  <div className="card-title player-skill-predict-label">Predict</div>
 )
 }
 

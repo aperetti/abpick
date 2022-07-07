@@ -26,7 +26,6 @@ export let onConnect = (cb: () => void) => {
 
 
 export let onStateUpdate = (cb: (appState: SocketAppState) => void) => {
-    console.log("onStateUpdate")
     client.on('stateUpdated', cb)
 }
 

@@ -11,8 +11,9 @@
 }
 
 .player-skill-predict-label {
-    text-orientation: sideways;
-    writing-mode: sideways-lr;
+    transform: rotate(180deg);
+    text-orientation: inherit;
+    writing-mode: tb;
     vertical-align: middle;
     line-height: 30px;
     padding: 0;

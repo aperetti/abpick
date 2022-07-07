@@ -20,7 +20,7 @@ import JoinRoom from './JoinRoom';
 import HeroSearch from './HeroSearch';
 import SkillDatatable from './SkillDatatable';
 import getAllSkills from './api/getAllSkills';
-import HeroDict from './types/HeroDict';
+import HeroSkillDict from './types/HeroDict';
 import HeroSearchName from './HeroSearchName';
 import { Popover2 } from '@blueprintjs/popover2';
 import PlayerSkillContainer, { PlayerPickedSkills, PlayerPredictSkills, PredictLabel } from './PlayerSkillContainer';
@@ -29,10 +29,14 @@ import EmptySkillTile from './EmptySkillTile';
 import predict from './api/predict';
 
 export type SkillDict = Record<number, Skill>
+export type HeroNameDict = Record<number, string>
+export type SkillHeroDict = Record<number, number>
 export type NullableSkillList = Array<number | null>
 export interface State {
   playerSkills: number[],
-  heroDict: HeroDict,
+  heroNameDict: HeroNameDict,
+  skillHeroDict: SkillHeroDict,
+  heroSkillDict: HeroSkillDict,
   skillDict: SkillDict,
   skills: NullableSkillList,
   ultimates: Ultimate[],
@@ -49,8 +53,10 @@ export interface State {
 }
 
 let initialState: State = {
+  heroNameDict: {},
+  skillHeroDict: {},
   playerSkills: [],
-  heroDict: {},
+  heroSkillDict: {},
   skillDict: {},
   skills: Array(48).fill(null),
   ultimates: [],
@@ -95,7 +101,7 @@ function shuffle<T>(array: Array<T>): Array<T> {
 function App() {
   const ultLu = [0, 11, 1, 10, 2, 9, 3, 8, 4, 7, 5, 6]
   let [state, setState] = useState<State>(initialState)
-  let { skillDict, skills, ultimates, room, pickHistory, editMode, heroDict } = state
+  let { skillDict, skills, ultimates, room, pickHistory, editMode, heroSkillDict: heroDict } = state
   const [cookies, setCookie, removeCookie] = useCookies(['room']);
 
   const mapSkills = useCallback((skillIds: Array<number | null>): Array<Skill | null> => {
@@ -125,8 +131,7 @@ function App() {
 
   useEffect(() => {
     let availableSkills = state.skills.filter(el => !el || !state.pickHistory.includes(el)).filter(notNull)
-    // if (state.playerSkills.filter(el => el).length > 0)
-      predict(state.playerSkills, availableSkills, setState)
+    predict(state.playerSkills, availableSkills, setState)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [state.playerSkills])
 
@@ -166,10 +171,19 @@ function App() {
     }
   }, [])
 
-  const setHero = useCallback((ult: Ultimate, slot: number) => {
+  const setHero = useCallback((ult: Ultimate, slot: number, ultOnly?: boolean ) => {
     setState(state => {
+
       let skillResponse = heroDict[ult.heroId]
       let newSkills = [...state.skills]
+
+      if (ultOnly) {
+        newSkills.splice(slot*4+3, 1, ult.abilityId)
+        return ({
+          ...state,
+          skills: newSkills
+        })
+      }
 
       newSkills.splice(slot * 4, 4, ...skillResponse.map(el => el.abilityId))
 
@@ -225,7 +239,6 @@ function App() {
     getUltimates(setState)
     getAllSkills(setState)
     onStateUpdate(mergeState)
-    resetListeners()
   }, [mergeState])
 
   useEffect(() => {
@@ -259,14 +272,15 @@ function App() {
   let turn = useMemo(() => pickHistory.length, [pickHistory])
   let filteredUlts = useMemo(() => ultimates.filter(ult => !skills.includes(ult.abilityId)), [ultimates, skills])
   let mappedSkills = useMemo(() => mapSkills(skills), [mapSkills, skills])
-  let heroSlot = useMemo(() => mappedSkills.reduce<Array<string | null>>((prev, curr, i) => {
-    if (i % 4 === 3) {
-      let hero = state.ultimates.find(el => el.abilityId === curr?.abilityId)?.heroName
-      return [...prev, hero || null]
+  let heroSlot = useMemo(() => skills.reduce<Array<string|null>>((prev, el, i) => {
+    if (i % 4 === 0 && el !== null) {
+      return [...prev,state.heroNameDict[state.skillHeroDict[el]]]
+    } else if (i % 4 === 0 && el === null) {
+      return [...prev, null]
     } else {
       return prev
     }
-  }, []), [mappedSkills, state.ultimates])
+  }, []), [state.heroNameDict, state.skillHeroDict, skills])
   let ultAndSkillLoaded = state.skillsHydrated && state.ultimatesHydrated
   let predictReducer = useCallback((metric: keyof Predict, pickHistory: number[], max: boolean) => (prevSkill: Skill | null, skill: Skill) => {
     if (!prevSkill && skill.predict)
