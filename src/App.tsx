@@ -156,8 +156,6 @@ function App() {
     console.log("updatingSocketState")
     try {
       setState(state => {
-        // if (state.stateId >= socketState.stateId)
-        //   return state
         return {
           ...state,
           skills: socketState.skills,
@@ -173,7 +171,7 @@ function App() {
 
   const setHero = useCallback((ult: Ultimate, slot: number, ultOnly?: boolean ) => {
     setState(state => {
-
+      console.log("setHero")
       let skillResponse = heroDict[ult.heroId]
       let newSkills = [...state.skills]
 
@@ -224,7 +222,7 @@ function App() {
           newPlayerSkills.push(skill.abilityId)
         }
       }
-
+      console.log("setPicked")
       return {
         ...state,
         pickHistory: newPickHistory,
@@ -239,11 +237,10 @@ function App() {
     getUltimates(setState)
     getAllSkills(setState)
     onStateUpdate(mergeState)
-  }, [mergeState])
+  }, [])
 
   useEffect(() => {
     onRoomLeft(() => {
-      resetListeners()
       setState(state => ({
         ...state,
         pickHistory: initialState.pickHistory,
@@ -254,6 +251,7 @@ function App() {
       }))
       removeCookie('room')
     })
+
     onRoomJoined(async (state) => {
       setCookie('room', state.room)
       setState(oldState => ({
@@ -266,7 +264,7 @@ function App() {
     if (cookies.room) {
       emitJoinRoom(cookies.room)
     }
-  }, [cookies.room, mergeState, setCookie, removeCookie])
+  }, [])
 
 
   let turn = useMemo(() => pickHistory.length, [pickHistory])
