@@ -10,12 +10,13 @@ function Controls(props: PropsWithChildren<Props>) {
   let { randomizeBoard } = props
   return (
           <Popover2
+            placement='bottom'
             content={
               <Menu>
                 <MenuItem icon="random" label="Randomize Board" onClick={randomizeBoard} />
               </Menu>
             }
-          ><li>Extras</li></Popover2>
+          >Extras</Popover2>
   );
 }
 
