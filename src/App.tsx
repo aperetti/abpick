@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useCookies } from 'react-cookie'
-import { emitCreateRoom, emitJoinRoom, emitLeaveRoom, onRoomJoined, emitUpdateState, onStateUpdate, SocketAppState, onRoomLeft, resetListeners } from './socket'
+import { emitCreateRoom, emitJoinRoom, emitLeaveRoom, onRoomJoined, emitUpdateState, onStateUpdate, SocketAppState, onRoomLeft} from './socket'
 import './App.css';
 import DraftBoard, { DraftBoardColumn } from './DraftBoard'
 import UltimateContainer from './UltimateContainer'
@@ -27,12 +27,14 @@ import PlayerSkillContainer, { PlayerPickedSkills, PlayerPredictSkills, PredictL
 import SkillTile from './SkillTile';
 import EmptySkillTile from './EmptySkillTile';
 import predict from './api/predict';
+import { statSync } from 'fs';
 
 export type SkillDict = Record<number, Skill>
 export type HeroNameDict = Record<number, string>
 export type SkillHeroDict = Record<number, number>
 export type NullableSkillList = Array<number | null>
 export interface State {
+  roomCount: number,
   playerSkills: number[],
   heroNameDict: HeroNameDict,
   skillHeroDict: SkillHeroDict,
@@ -53,6 +55,7 @@ export interface State {
 }
 
 let initialState: State = {
+  roomCount: 1,
   heroNameDict: {},
   skillHeroDict: {},
   playerSkills: [],
@@ -111,9 +114,9 @@ function App() {
   }, [skillDict])
 
   const getSocketState = useCallback((state: State): SocketAppState => {
-    let { pickHistory, skills, stateId, room, roomId } = state
+    let { pickHistory, skills, stateId, room, roomId, roomCount } = state
     return {
-      pickHistory, skills, stateId, room, _id: roomId
+      pickHistory, skills, stateId, room, _id: roomId, roomCount
     }
   }, [])
 
@@ -161,6 +164,7 @@ function App() {
           skills: socketState.skills,
           pickHistory: socketState.pickHistory,
           stateId: socketState.stateId,
+          roomCount: socketState.roomCount || state.roomCount,
           loading: false
         }
       })
@@ -171,7 +175,6 @@ function App() {
 
   const setHero = useCallback((ult: Ultimate, slot: number, ultOnly?: boolean ) => {
     setState(state => {
-      console.log("setHero")
       let skillResponse = heroDict[ult.heroId]
       let newSkills = [...state.skills]
 
@@ -222,7 +225,6 @@ function App() {
           newPlayerSkills.push(skill.abilityId)
         }
       }
-      console.log("setPicked")
       return {
         ...state,
         pickHistory: newPickHistory,
@@ -237,6 +239,7 @@ function App() {
     getUltimates(setState)
     getAllSkills(setState)
     onStateUpdate(mergeState)
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   useEffect(() => {
@@ -248,6 +251,7 @@ function App() {
         skills: initialState.skills,
         room: initialState.room,
         roomId: initialState.roomId,
+        roomCount: initialState.roomCount
       }))
       removeCookie('room')
     })
@@ -264,6 +268,7 @@ function App() {
     if (cookies.room) {
       emitJoinRoom(cookies.room)
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
 
@@ -317,8 +322,8 @@ function App() {
     <div className="App bp4-dark">
       <Header logo={Logo}>
         {room === '' && <li data-testid="createRoomBtn" onClick={sendCreateRoom}>Create Room</li>}
-        {room === '' && <Popover2 data-testid="joinRoomBtn" content={<JoinRoom joinRoom={sendJoinRoom} />}><li>Join Room</li></Popover2>}
-        {room !== '' && <li data-testid="leaveRoomBtn" onClick={() => emitLeaveRoom()}>Leave Room</li>}
+        {room === '' && <Popover2 data-testid="joinRoomBtn" placement='bottom' content={<JoinRoom joinRoom={sendJoinRoom} />}><li>Join Room</li></Popover2>}
+        {room !== '' && <li data-testid="leaveRoomBtn" onClick={() => emitLeaveRoom()}>Leave Room ({state.roomCount})</li>}
         {room !== '' && <li data-testid="roomName">Room: {room}</li>}
         <Controls randomizeBoard={randomizeBoard} />
       </Header>

@@ -40,6 +40,10 @@
     animation: pulse 1s infinite;
 }
 
+.skill-tile-popover {
+    opacity: .9;
+}
+
 @keyframes pulse {
     0% {
         box-shadow: inset 0 0 0 0 rgba(87, 84, 117, 0.7);
