@@ -15,6 +15,7 @@ interface Skill {
     behavior: string
     desc: string
     img: string
+    ult: boolean
     stats: {
         mean: number
         pickRate: number

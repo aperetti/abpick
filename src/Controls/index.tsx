@@ -4,16 +4,17 @@ import { Menu, MenuItem } from '@blueprintjs/core';
 import { Popover2 } from '@blueprintjs/popover2';
 interface Props {
   randomizeBoard: () => void
+  resetBoard: () => void
 }
 
 function Controls(props: PropsWithChildren<Props>) {
-  let { randomizeBoard } = props
   return (
           <Popover2
             placement='bottom'
             content={
               <Menu>
-                <MenuItem icon="random" label="Randomize Board" onClick={randomizeBoard} />
+                <MenuItem icon="random" label="Randomize Board" onClick={props.randomizeBoard} />
+                <MenuItem icon="reset" label="Reset Board" onClick={props.resetBoard} />
               </Menu>
             }
           >Extras</Popover2>

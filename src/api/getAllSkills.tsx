@@ -12,8 +12,10 @@ async function getAllSkills(dispatch: Dispatch<SetStateAction<State>>) {
     let skills: SkillDict = {}
     let skillHeroDict: SkillHeroDict= {}
     for (const [heroId, heroSkills] of Object.entries(json.skillDict)) {
-       heroSkills.forEach(el => {
+       heroSkills.forEach((el, idx) => {
         skills[el.abilityId] = el
+
+        skills[el.abilityId]['ult'] = idx === 3
         skillHeroDict[el.abilityId] = Number(heroId)
        })
     }
