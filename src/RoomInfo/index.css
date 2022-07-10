@@ -1,0 +1,18 @@
+.roominfo-content {
+ color: darkgray;
+ cursor: default;
+}
+.roominfo-indicator {
+    position: absolute;
+    bottom: 16px;
+    left: 10px;
+    right: 0px;
+    display: inline-flex;
+    gap:2px;
+    color: #4b5163
+}
+
+.roominfo-active {
+    text-shadow: 0px 0px 3px #ccc;
+    color: #ccc
+}

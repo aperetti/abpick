@@ -28,6 +28,7 @@ import SkillTile from './SkillTile';
 import EmptySkillTile from './EmptySkillTile';
 import predict from './api/predict';
 import Help from './Help';
+import RoomInfo from './RoomInfo';
 
 /*
 TODO
@@ -330,8 +331,8 @@ function App() {
       <Header logo={Logo}>
         {room === '' && <li data-testid="createRoomBtn" onClick={sendCreateRoom}>Create Room</li>}
         {room === '' && <li><Popover2 data-testid="joinRoomBtn" placement='bottom' content={<JoinRoom joinRoom={sendJoinRoom} />}>Join Room</Popover2></li>}
-        {room !== '' && <li data-testid="leaveRoomBtn" onClick={() => emitLeaveRoom()}>Leave Room ({state.roomCount})</li>}
-        {room !== '' && <li data-testid="roomName">Room: {room}</li>}
+        {room !== '' && <li data-testid="leaveRoomBtn" onClick={() => emitLeaveRoom()}>Leave Room</li>}
+        {room !== '' && <RoomInfo room={room} roomCount={state.roomCount} />}
         <li><Controls randomizeBoard={randomizeBoard} resetBoard={resetBoard}/></li>
         <li><Help /></li>
       </Header>
