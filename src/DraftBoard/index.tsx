@@ -3,7 +3,7 @@ import './index.css';
 
 interface Props {}
 interface PropsColumn {
-  location: "left" | "right" | "center" | "overview"
+  location: "left" | "right" | "center" | "overview" | "combos"
 }
 function DraftBoard(props: PropsWithChildren<Props>){
   return (

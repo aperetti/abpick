@@ -8,6 +8,11 @@ export interface Predict {
     kills: number
     deaths: number
 }
+interface ComboSkill {
+    sample_size: number
+    winPct: number
+    synergy: number
+}
 interface Skill {
     abilityId: number
     abilityName: number
@@ -24,6 +29,13 @@ interface Skill {
         winRate: number
         winRateRounds: number[]
         survival: number[]
+        combos?: Record<string, ComboSkill>
+        scepterPickupRate?: number,
+        scepterWinW?: number,
+        scepterWinWo?: number,
+        shardPickupRate?: number,
+        shardWinW?: number,
+        shardWinWo?: number,
     }
     predict?: Predict
 }

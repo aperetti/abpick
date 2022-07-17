@@ -12,6 +12,12 @@
     color: darkgray;
 }
 
+.skill-detail-combo {
+    display: inline-flex;
+    gap: 5px;
+    margin-left: 10px;
+}
+
 .skill-desc {
     width: 35%;
     display: inline-block;

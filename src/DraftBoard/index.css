@@ -31,10 +31,15 @@
     order: 3;
 }
 
+.Draft-board-combos {
+    display: flex;
+    flex-direction: column;
+    order: 4;
+}
 
 .Draft-board-overview {
     display: flex;
     flex-direction: column;
-    order: 4;
+    order: 5;
     flex-grow: 1;
 }

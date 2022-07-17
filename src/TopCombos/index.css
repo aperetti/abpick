@@ -1,0 +1,37 @@
+
+.top-combos-container {
+    margin-top: 5px;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    overflow-y: auto;
+
+}
+
+.combo-card {
+    margin-top: 10px;
+    margin-bottom: 10px;
+}
+.top-combos-combo {
+    position: relative;
+    display: inline-flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 3px;
+    justify-content: space-around;
+    background: var(--bg-dark);
+    border: 1px;
+    border-radius: 2px;
+    padding: 3px;
+    box-shadow: inset 1px 1px 2px #050505;
+    margin: 0 6px;
+}
+
+.top-combos-overlay {
+    background-color: rgba(10,20,10,.8);
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    color: darkgray;
+}

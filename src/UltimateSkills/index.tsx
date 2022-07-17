@@ -1,14 +1,15 @@
 import React, { PropsWithChildren, useState } from 'react';
 import './index.css';
-import Skill, { SkillClick } from '../types/Skill';
+import { SkillClick } from '../types/Skill';
 import SkillTile from '../SkillTile'
 import EmptyUltTile from '../EmptyUltTile'
 import Ultimate from '../types/Ultimate';
 import { Tag } from '@blueprintjs/core';
+import { NullableSkillList } from '../App';
 
 
 interface Props {
-  skills: Array<Skill | null>
+  skills: NullableSkillList
   ultimates: Array<Ultimate>
   setHero: (ult: Ultimate, slot: number) => void
   setPickedSkill: SkillClick
@@ -30,7 +31,7 @@ function UltimateSkills(props: PropsWithChildren<Props>) {
           if (!skill || editMode || ultOnly) {
             return <EmptyUltTile ultOnly={ultOnly} skill={skill} setHero={setHero} key={`empty-skill-${i}`} ultimates={ultimates} slot={slotLookup[i]}></EmptyUltTile>
           } else {
-            return <SkillTile turn={turn} data-testid={`ultSkillTile${i}`} picked={pickHistory.includes(skill.abilityId)} onClick={setPickedSkill(skill)} skill={skill}></SkillTile>
+            return <SkillTile skills={skills} turn={turn} data-testid={`ultSkillTile${i}`} picked={pickHistory.includes(skill.abilityId)} onClick={setPickedSkill(skill)} skill={skill}></SkillTile>
           }
         })}
       </div>

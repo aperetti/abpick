@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useCookies } from 'react-cookie'
-import { emitCreateRoom, emitJoinRoom, emitLeaveRoom, onRoomJoined, emitUpdateState, onStateUpdate, SocketAppState, onRoomLeft} from './socket'
+import { emitCreateRoom, emitJoinRoom, emitLeaveRoom, onRoomJoined, emitUpdateState, onStateUpdate, SocketAppState, onRoomLeft } from './socket'
 import './App.css';
 import DraftBoard, { DraftBoardColumn } from './DraftBoard'
 import UltimateContainer from './UltimateContainer'
@@ -29,6 +29,7 @@ import EmptySkillTile from './EmptySkillTile';
 import predict from './api/predict';
 import Help from './Help';
 import RoomInfo from './RoomInfo';
+import TopCombos from './TopCombos';
 
 /*
 TODO
@@ -40,7 +41,8 @@ TODO
 export type SkillDict = Record<number, Skill>
 export type HeroNameDict = Record<number, string>
 export type SkillHeroDict = Record<number, number>
-export type NullableSkillList = Array<number | null>
+export type NullableSkillIdList = Array<number | null>
+export type NullableSkillList = Array<Skill | null>
 export interface State {
   roomCount: number,
   playerSkills: number[],
@@ -48,7 +50,7 @@ export interface State {
   skillHeroDict: SkillHeroDict,
   heroSkillDict: HeroSkillDict,
   skillDict: SkillDict,
-  skills: NullableSkillList,
+  skills: NullableSkillIdList,
   ultimates: Ultimate[],
   activeSlot: number,
   room: string,
@@ -181,13 +183,13 @@ function App() {
     }
   }, [])
 
-  const setHero = useCallback((ult: Ultimate, slot: number, ultOnly?: boolean ) => {
+  const setHero = useCallback((ult: Ultimate, slot: number, ultOnly?: boolean) => {
     setState(state => {
       let skillResponse = heroDict[ult.heroId]
       let newSkills = [...state.skills]
 
       if (ultOnly) {
-        newSkills.splice(slot*4+3, 1, ult.abilityId)
+        newSkills.splice(slot * 4 + 3, 1, ult.abilityId)
         return ({
           ...state,
           skills: newSkills
@@ -247,15 +249,15 @@ function App() {
     getUltimates(setState)
     getAllSkills(setState)
     onStateUpdate(mergeState)
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  let resetBoard = useCallback(() => setState( state =>({
-      ...state,
-        pickHistory: initialState.pickHistory,
-        playerSkills: initialState.playerSkills,
-        skills: initialState.skills,
-        changeId: state.changeId + 1
+  let resetBoard = useCallback(() => setState(state => ({
+    ...state,
+    pickHistory: initialState.pickHistory,
+    playerSkills: initialState.playerSkills,
+    skills: initialState.skills,
+    changeId: state.changeId + 1
   })), [setState])
 
   useEffect(() => {
@@ -284,16 +286,16 @@ function App() {
     if (cookies.room) {
       emitJoinRoom(cookies.room)
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
 
   let turn = useMemo(() => pickHistory.length, [pickHistory])
   let filteredUlts = useMemo(() => ultimates.filter(ult => !skills.includes(ult.abilityId)), [ultimates, skills])
   let mappedSkills = useMemo(() => mapSkills(skills), [mapSkills, skills])
-  let heroSlot = useMemo(() => skills.reduce<Array<string|null>>((prev, el, i) => {
+  let heroSlot = useMemo(() => skills.reduce<Array<string | null>>((prev, el, i) => {
     if (i % 4 === 0 && el !== null) {
-      return [...prev,state.heroNameDict[state.skillHeroDict[el]]]
+      return [...prev, state.heroNameDict[state.skillHeroDict[el]]]
     } else if (i % 4 === 0 && el === null) {
       return [...prev, null]
     } else {
@@ -302,7 +304,7 @@ function App() {
   }, []), [state.heroNameDict, state.skillHeroDict, skills])
   let ultAndSkillLoaded = state.skillsHydrated && state.ultimatesHydrated
 
-  let sortPredict = useCallback((metric: keyof Predict, sort: ("asc"|"desc")) => (el1: Skill, el2: Skill) => {
+  let sortPredict = useCallback((metric: keyof Predict, sort: ("asc" | "desc")) => (el1: Skill, el2: Skill) => {
     if (!el1.predict && !el2.predict)
       return 0
     if (!el1.predict)
@@ -310,7 +312,7 @@ function App() {
     if (!el2.predict)
       return 1
     if (sort === "desc")
-      return  el2.predict[metric] - el1.predict[metric]
+      return el2.predict[metric] - el1.predict[metric]
     if (sort === "asc")
       return el1.predict[metric] - el2.predict[metric]
     return 0
@@ -319,8 +321,8 @@ function App() {
   let ultPicked = useMemo(() => mapSkills(state.playerSkills).reduce((ultFound, el) => Boolean(ultFound || el?.ult), false), [mapSkills, state.playerSkills])
   let filteredPredictSkills = useMemo(() => mappedSkills
     .filter((el): el is Skill => Boolean(el !== null && el.predict && !pickHistory.includes(el.abilityId)
-      && !(ultPicked && el.ult) && (pickHistory.length > 29 || el.stats.survival[pickHistory.length+10] < .6 ))
-    , [ultPicked, pickHistory]),[mappedSkills, pickHistory, ultPicked])
+      && !(ultPicked && el.ult) && (pickHistory.length > 29 || el.stats.survival[pickHistory.length + 10] < .6))
+      , [ultPicked, pickHistory]), [mappedSkills, pickHistory, ultPicked])
 
   let goldPredictSkill = useMemo(() => [...filteredPredictSkills].sort(sortPredict('gold', 'desc')), [filteredPredictSkills, sortPredict])
   let damagePredictSkill = useMemo(() => [...filteredPredictSkills].sort(sortPredict('damage', 'desc')), [filteredPredictSkills, sortPredict])
@@ -333,7 +335,7 @@ function App() {
         {room === '' && <li><Popover2 data-testid="joinRoomBtn" placement='bottom' content={<JoinRoom joinRoom={sendJoinRoom} />}>Join Room</Popover2></li>}
         {room !== '' && <li data-testid="leaveRoomBtn" onClick={() => emitLeaveRoom()}>Leave Room</li>}
         {room !== '' && <RoomInfo room={room} roomCount={state.roomCount} />}
-        <li><Controls randomizeBoard={randomizeBoard} resetBoard={resetBoard}/></li>
+        <li><Controls randomizeBoard={randomizeBoard} resetBoard={resetBoard} /></li>
         <li><Help /></li>
       </Header>
       {ultAndSkillLoaded && <DraftBoard>
@@ -343,18 +345,18 @@ function App() {
               <PlayerPickedSkills>
                 {[0, 1, 2].map(slot => {
                   let k = state.playerSkills[slot]
-                  return ((k && <SkillTile skill={skillDict[k]} turn={0} />) || <EmptySkillTile />)
+                  return ((k && <SkillTile skills={mappedSkills} skill={skillDict[k]} turn={0} />) || <EmptySkillTile />)
                 })}
               </PlayerPickedSkills>
               <PredictLabel />
               <PlayerPredictSkills category='Win'>
-                {(winPredictSkill.length > 0 && <SkillTile skill={winPredictSkill[0]} turn={0} />) || <EmptySkillTile />}
+                {(winPredictSkill.length > 0 && <SkillTile skills={mappedSkills} skill={winPredictSkill[0]} turn={0} />) || <EmptySkillTile />}
               </PlayerPredictSkills>
               <PlayerPredictSkills category='Damage'>
-                {(damagePredictSkill.length > 0 && <SkillTile skill={damagePredictSkill[0]} turn={0} />) || <EmptySkillTile />}
+                {(damagePredictSkill.length > 0 && <SkillTile skills={mappedSkills} skill={damagePredictSkill[0]} turn={0} />) || <EmptySkillTile />}
               </PlayerPredictSkills>
               <PlayerPredictSkills category='Gold'>
-                {(goldPredictSkill.length > 0 && <SkillTile skill={goldPredictSkill[0]} turn={0} />) || <EmptySkillTile />}
+                {(goldPredictSkill.length > 0 && <SkillTile skills={mappedSkills} skill={goldPredictSkill[0]} turn={0} />) || <EmptySkillTile />}
               </PlayerPredictSkills>
             </PlayerSkillContainer>
           </Card>
@@ -401,6 +403,8 @@ function App() {
             </Card>
           </PickedContainer>
         </DraftBoardColumn>
+
+        <TopCombos skills={mappedSkills} />
 
         <DraftBoardColumn location='overview'>
           {skills.filter(notNull).length > 0 && <SurvivalContainer>

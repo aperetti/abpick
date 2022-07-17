@@ -20,6 +20,7 @@
 }
 
 .skill {
+    position: relative;
     background: var(--bg-dark);
     border: 1px;
     border-radius: 2px;
@@ -43,6 +44,8 @@
 .skill-tile-popover {
     opacity: .9;
 }
+
+
 
 @keyframes pulse {
     0% {

@@ -21,7 +21,7 @@ function PickSkills(props: PropsWithChildren<Props>) {
       <div className={`Picked-skills ${turn === slot ? 'Picked-highlight' : ''}`}>
         {skills.map(skill => {
           if (skill) {
-            return <SkillTile turn={turn} skill={skill}></SkillTile>
+            return <SkillTile skills={skills} turn={turn} skill={skill}></SkillTile>
           } else {
             return <EmptySkillTile></EmptySkillTile>
           }

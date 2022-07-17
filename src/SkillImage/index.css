@@ -4,6 +4,15 @@
     width: 64px;
 }
 
+.skill-overlay {
+    background-color: rgba(10,20,10,.8);
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    color: darkgray;
+}
+
 .skill > img {
     width: inherit;
 }
