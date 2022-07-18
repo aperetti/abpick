@@ -7,7 +7,7 @@ import UltimateContainer from './UltimateContainer'
 import UltimateSkills from './UltimateSkills'
 import Card from './Card'
 import Header from './Header'
-import Logo from './logo512.png'
+import Logo from './logo.png'
 import PickContainer from './PickContainer';
 import PickedContainer from './PickedContainer';
 import getUltimates from './api/getUltimate';

@@ -10,7 +10,6 @@
 	position: absolute;
 	left: 125px;
 	top: 5px;
-	filter: drop-shadow(2px 2px 5px #212226);
 }
 
 .hdr-base {
@@ -21,7 +20,7 @@
     border-left: 15px solid transparent;
     border-right: 15px solid transparent;
     height: 0;
-    width: 100px;
+    width: 130px;
     filter: drop-shadow(0 1px 3px #101818);
 
 }
@@ -34,7 +33,7 @@
     border-left: 15px solid transparent;
     border-right: 15px solid transparent;
     height: 0;
-    width: 120px;
+    width: 150px;
     filter: drop-shadow(0 1px 3px #101818);
 }
 
