@@ -52,6 +52,8 @@ function SkillDetails(props: PropsWithChildren<Props>) {
       <SkillDetail desc="Avg. Pick">{dec(skill.stats.mean, 0)}</SkillDetail>
       <SkillDetail desc="Pick Variation">{dec(skill.stats.std, 0)}</SkillDetail>
       <SkillDetail desc="Win Rate">{`${(skill.stats.winRate * 100).toFixed(1)}%`}</SkillDetail>
+      {skill.stats.shardWinW && skill.stats.shardWinWo && <SkillDetail desc="Shard Win Delta">{`${((skill.stats.shardWinW - skill.stats.shardWinWo) * 100).toFixed(1)}%`}</SkillDetail>}
+      {skill.stats.scepterWinW && skill.stats.scepterWinWo && <SkillDetail desc="Scepter Win Delta">{`${((skill.stats.scepterWinW - skill.stats.scepterWinWo) * 100).toFixed(1)}%`}</SkillDetail>}
       <div className="skill-subtitle">Predictions</div>
       {skill.predict && <SkillDetail desc="Win">{`${(skill.predict.win * 100).toFixed(1)}%`}</SkillDetail>}
       {skill.predict && <SkillDetail desc="Damage">{`${(skill.predict.damage * 45).toFixed(0)}`}</SkillDetail>}
@@ -59,7 +61,7 @@ function SkillDetails(props: PropsWithChildren<Props>) {
       {skill.predict && <SkillDetail desc="Gold">{`${(skill.predict.gold * 45).toFixed(0)}`}</SkillDetail>}
       <div>
         <div className='skill-subtitle'>Combos</div>
-        <div className="skill-detail-combo">{combos && combos.map(comboSkill => <SkillImage {...comboSkill}/>)}</div>
+        <div className="skill-detail-combo">{combos && combos.map(comboSkill => <SkillImage disableAgs {...comboSkill}/>)}</div>
       </div>
       <VictoryChart>
         <VictoryLabel

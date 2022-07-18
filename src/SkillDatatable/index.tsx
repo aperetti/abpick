@@ -82,7 +82,7 @@ function SkillDatatable(props: PropsWithChildren<Props>) {
   )
 
   let columns = useMemo(() => [
-    { field: "abilityName", headerName: "Ability", renderCell: (params: GridRenderCellParams) => <SkillImage skill={params.row} onClick={pickSkill(params.row)} /> },
+    { field: "abilityName", headerName: "Ability", renderCell: (params: GridRenderCellParams) => <SkillImage skill={params.row} onClick={pickSkill(params.row)} disableAgs /> },
     { field: "avgPick", headerName: "Average Pick", valueFormatter: valueFormatter(1,0)},
     { field: "pickRate", headerName: "Percent Picked", valueFormatter: valueFormatter(100,0,'%')},
     { field: "winRate", headerName: "Win Rate", valueFormatter: valueFormatter(100,0,'%')},

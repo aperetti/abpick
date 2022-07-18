@@ -36,8 +36,8 @@ function TopCombos(props: PropsWithChildren<Props>) {
           {combos.map(([skill1, skill2, synergi], i) => (
             i % 2 === 0 && <div>
               <div className='top-combos-combo'>
-                <SkillImage skill={skill1} />
-                <SkillImage skill={skill2} />
+                <SkillImage skill={skill1} disableAgs/>
+                <SkillImage skill={skill2} disableAgs/>
                 <div className='top-combos-overlay'>Win +{(100 * synergi).toFixed(0)}%</div>
               </div>
             </div>

@@ -13,6 +13,28 @@
     color: darkgray;
 }
 
+.skill-scepter {
+    position: absolute;
+    bottom: -3px;
+    left: 0;
+}
+
+.skill-shard {
+    position: absolute;
+    bottom: 3px;
+    right: 0;
+    background-color: rgba(10,20,10,.8);
+}
+
+.skill-ags-container {
+    background-color: rgba(10,20,10,.8);
+    position:absolute;
+    bottom:0px;
+    left: 0;
+    right: 0;
+    height: 25px;
+
+}
 .skill > img {
     width: inherit;
 }

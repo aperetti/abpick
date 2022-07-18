@@ -1,6 +1,8 @@
 import React, { PropsWithChildren, useEffect, useState } from 'react';
 import './index.css';
 import Skill from '../types/Skill';
+import scepter from '../images/scepter.png'
+import shard from '../images/shard.png'
 
 interface Props {
   skill: Skill
@@ -9,10 +11,11 @@ interface Props {
   edit?: boolean
   synergy?: number
   winPct?: number
+  disableAgs?: boolean
 }
 
 function SkillImage(props: PropsWithChildren<Props>) {
-  let { skill, onClick, picked, edit, synergy, winPct } = props
+  let { skill, onClick, picked, edit, synergy, winPct, disableAgs} = props
 
   let [img, setImg] = useState('')
   let [loading, setLoading] = useState(false)
@@ -37,6 +40,10 @@ function SkillImage(props: PropsWithChildren<Props>) {
       onClick={(e) => {
         onClick && onClick(e.ctrlKey)
       }}>
+      {((skill.stats.scepterWinW || skill.stats.shardWinW) && !disableAgs) && <div className='skill-ags-container'>
+        {skill.stats.scepterWinW && <div className='skill-scepter'><img width={'20px'} src={scepter} alt={"Scepter Win"}></img></div>}
+        {skill.stats.shardWinW && <div className='skill-shard'><img width={'20px'} src={shard} alt={"Shard Win"}></img></div>}
+      </div>}
       {(synergy || winPct) && <div className='skill-overlay'>
         {synergy &&
           <div style={{ color: `${synergy > 0 ? 'darkgrey' : 'red'}` }}>
