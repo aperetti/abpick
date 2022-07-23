@@ -1,0 +1,8 @@
+.hero-search-container {
+    display: inline-flex;
+    gap: 2px;
+}
+
+.hero-search-container:last-child{
+    width: 16px;
+}

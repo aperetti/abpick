@@ -130,6 +130,7 @@ function App() {
 
   const getSocketState = useCallback((state: State): SocketAppState => {
     let { picks, skills, stateId, room, roomId, roomCount } = state
+    picks = picks ? picks : initialState.picks
     return {
       picks, skills, stateId, room, _id: roomId, roomCount
     }
@@ -173,12 +174,18 @@ function App() {
     setState(state => ({ ...state, loading: true }))
     try {
       setState(state => {
+        let newActiveSlot = state.activeSlot
+        if (socketState.skills[state.activeSlot*4] !== null)
+          newActiveSlot = -1
+        let newPlayerSkills = [...state.playerSkills].filter(el => socketState.skills.includes(el))
         return {
           ...state,
+          playerSkills: newPlayerSkills,
           skills: socketState.skills,
           picks: socketState.picks,
           stateId: socketState.stateId,
           roomCount: socketState.roomCount || state.roomCount,
+          activeSlot: newActiveSlot,
           loading: false
         }
       })
@@ -191,19 +198,27 @@ function App() {
     setState(state => {
       let skillResponse = heroDict[ult.heroId]
       let newSkills = [...state.skills]
-
       if (ultOnly) {
         newSkills.splice(slot * 4 + 3, 1, ult.abilityId)
+        let newPicks = [...state.picks].map(el => newSkills.includes(el) ? el : null)
+        let newActivePick = newSkills.findIndex(el => el === null)
         return ({
           ...state,
-          skills: newSkills
+          picks: newPicks,
+          activePick: newActivePick,
+          skills: newSkills,
+          changeId: state.changeId + 1
         })
       }
 
       newSkills.splice(slot * 4, 4, ...skillResponse.map(el => el.abilityId))
-
+      let newPicks = [...state.picks].map(el => newSkills.includes(el) ? el : null)
+      let newActivePick = newPicks.findIndex(el => el === null)
+      console.log(newActivePick)
       return ({
         ...state,
+        picks: newPicks,
+        activePick: newActivePick,
         activeSlot: state.activeSlot + 1,
         skills: newSkills,
         changeId: state.changeId + 1
@@ -211,6 +226,7 @@ function App() {
     })
   }, [heroDict])
 
+  const closeSearch = useCallback(() => setState(state => ({...state, activeSlot:-1})), [])
 
   const randomizeBoard = useCallback(() => {
     shuffle(ultimates).slice(0, 12).forEach((ult, i) => setHero(ult, i))
@@ -391,7 +407,7 @@ function App() {
             <Card title="Radiant Team" contentClass="picked-container-content">
               {[0, 2, 4, 6, 8, 10].map(slot => {
                 return (
-                  (state.activeSlot === slot && <HeroSearch ultimates={state.ultimates} setHero={setHero} slot={ultLu[slot]} />) ||
+                  (state.activeSlot === slot && <HeroSearch closeSearch={closeSearch} ultimates={state.ultimates} setHero={setHero} slot={ultLu[slot]} />) ||
                   <HeroSearchName activePick={state.activePick} slot={slot} skills={mappedHistory} key={`hero-search-${slot}`} onClick={() => setState({ ...state, activeSlot: slot })} hero={heroSlot[ultLu[slot]]} />
                 )
               })}
@@ -404,7 +420,7 @@ function App() {
             <Card title="Dire Team" contentClass="picked-container-content">
               {[1, 3, 5, 7, 9, 11].map(slot => {
                 return (
-                  (state.activeSlot === slot && <HeroSearch ultimates={state.ultimates} setHero={setHero} slot={ultLu[slot]} />) ||
+                  (state.activeSlot === slot && <HeroSearch closeSearch={closeSearch} ultimates={state.ultimates} setHero={setHero} slot={ultLu[slot]} />) ||
                   <HeroSearchName activePick={state.activePick} slot={slot} skills={mappedHistory} key={`hero-search-${slot}`} onClick={() => setState({ ...state, activeSlot: slot })} hero={heroSlot[ultLu[slot]]} />
                 )
               })}
