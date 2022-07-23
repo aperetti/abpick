@@ -15,7 +15,7 @@ export function resetListeners() {
 
 export interface SocketAppState {
     skills: Array<number | null>;
-    pickHistory: number[];
+    picks: (number|null)[];
     stateId: number;
     roomCount?: number
     _id: string;

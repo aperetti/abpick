@@ -28,7 +28,6 @@ function TopCombos(props: PropsWithChildren<Props>) {
     }, []).sort((el1, el2) => el2[2] - el1[2])
 
   ), [nnSkills])
-  console.log(combos)
   return (
     (combos.length > 0 &&
       <DraftBoardColumn location='combos'>

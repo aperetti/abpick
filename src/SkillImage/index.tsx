@@ -12,10 +12,12 @@ interface Props {
   synergy?: number
   winPct?: number
   disableAgs?: boolean
+  small?: boolean
 }
 
 function SkillImage(props: PropsWithChildren<Props>) {
   let { skill, onClick, picked, edit, synergy, winPct, disableAgs} = props
+  let small = Boolean(props.small)
 
   let [img, setImg] = useState('')
   let [loading, setLoading] = useState(false)
@@ -32,7 +34,7 @@ function SkillImage(props: PropsWithChildren<Props>) {
 
   return (
     <div className={`
-      skill bp3-dark
+      skill ${small ? 'skill-small' : ''} bp3-dark
       ${picked ? 'skill-picked' : ''}
       ${loading ? 'skill-loading' : ''}
       ${onClick ? 'skill-click' : ''}
