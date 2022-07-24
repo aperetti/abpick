@@ -21,6 +21,10 @@
     color: darkgrey;
 }
 
+.controls-strict-text {
+    color: #abb3bf;
+}
+
 .Controls-actions {
     display: grid;
     grid-template-columns: 1fr 1fr 1fr;

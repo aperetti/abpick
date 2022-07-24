@@ -13,22 +13,21 @@ interface Props {
 }
 
 
-function HeroSearchName(props: PropsWithChildren<Props>) {
-  let { skills, slot } = props
+function HeroSearchName({onClick, hero, slot, skills, activePick}: PropsWithChildren<Props>) {
   return (
-    <div className="hero-name-container" onClick={props.onClick}>
-      <div className='hero-name-skills-container'>
-        {[0, 1, 2, 3].map(el => {
-          let skillSlotIdx = el*12 + slot
+    <div className="hero-name-container" onClick={onClick}>
+      { <div className={`hero-name-skills-container ${activePick % 10 === slot && activePick < 40  ? 'hero-name-skills-glow' : ''}`}>
+        {slot !== 10 && slot !== 11 && [0, 1, 2, 3].map(el => {
+          let skillSlotIdx = el*10 + slot
           let skillSlot = skills[skillSlotIdx]
           return (skillSlot &&
             <SkillImage small disableAgs skill={skillSlot} />) ||
-            <EmptySkillTile small glow={props.activePick === skillSlotIdx}/>
+            <EmptySkillTile small />
         }
         )}
-      </div>
+      </div>}
       <div className='hero-name-text '>
-        {props.hero || "--Select Hero--"}
+        {hero || "--Select Hero--"}
       </div>
 
     </div>)

@@ -3,6 +3,11 @@
     gap: 2px;
 }
 
-.hero-search-container:last-child{
+.hero-search-container > *:first-child {
+    flex-grow: 3
+}
+
+
+.hero-search-container > * :last-child{
     width: 16px;
 }

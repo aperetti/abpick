@@ -58,11 +58,12 @@ export interface State {
   roomId: string,
   loading: boolean,
   stateId: number,
-  picks: (number|null)[],
+  picks: (number | null)[],
   changeId: number,
   editMode: boolean
   skillsHydrated: boolean,
-  ultimatesHydrated: boolean
+  ultimatesHydrated: boolean,
+  strictMode: boolean
 }
 
 let initialState: State = {
@@ -84,11 +85,22 @@ let initialState: State = {
   stateId: 0,
   picks: Array(40).fill(null),
   changeId: 0,
-  editMode: false
+  editMode: false,
+  strictMode: false
 }
 
 function notNull<T>(x: T | null): x is T {
   return x !== null;
+}
+
+const nextPick = (pickArray: (number | null)[]) => {
+  let summaryArray = pickArray.reduce<number[]>((summary, el, idx) => {
+    summary[idx % 10] += el !== null ? 1 : 0
+    return summary
+  }, Array(10).fill(0))
+  let minValue = Math.min(...summaryArray)
+  let minIdx = summaryArray.findIndex(el => el === minValue)
+  return minIdx + 10 * minValue
 }
 
 const filterNotPicked = (pickHistory: number[]) => (skill: Skill): boolean => skill !== null && !pickHistory.includes(skill.abilityId)
@@ -116,12 +128,12 @@ function shuffle<T>(array: Array<T>): Array<T> {
 function App() {
   const ultLu = [0, 11, 1, 10, 2, 9, 3, 8, 4, 7, 5, 6]
   let [state, setState] = useState<State>(initialState)
-  let { skillDict, skills, ultimates, room, editMode, picks, heroSkillDict: heroDict } = state
+  let { skillDict, skills, ultimates, room, editMode, picks, heroSkillDict: heroDict, strictMode } = state
 
   let pickHistory = useMemo(() => picks.filter((el): el is number => el !== null), [picks])
   const [cookies, setCookie, removeCookie] = useCookies(['room']);
 
-
+  let setStrictMode = useCallback((strict: boolean) => setState(state => ({ ...state, strictMode: strict })), [])
   const mapSkills = useCallback((skillIds: Array<number | null>): Array<Skill | null> => {
     return skillIds.map(skillId => {
       return (skillId && skillDict[skillId] && { id: skillId, ...skillDict[skillId] }) || null
@@ -175,7 +187,7 @@ function App() {
     try {
       setState(state => {
         let newActiveSlot = state.activeSlot
-        if (socketState.skills[state.activeSlot*4] !== null)
+        if (socketState.skills[state.activeSlot * 4] !== null)
           newActiveSlot = -1
         let newPlayerSkills = [...state.playerSkills].filter(el => socketState.skills.includes(el))
         return {
@@ -226,7 +238,7 @@ function App() {
     })
   }, [heroDict])
 
-  const closeSearch = useCallback(() => setState(state => ({...state, activeSlot:-1})), [])
+  const closeSearch = useCallback(() => setState(state => ({ ...state, activeSlot: -1 })), [])
 
   const randomizeBoard = useCallback(() => {
     shuffle(ultimates).slice(0, 12).forEach((ult, i) => setHero(ult, i))
@@ -241,11 +253,35 @@ function App() {
     setState(state => {
       let newPicks = [...state.picks]
       let newPlayerSkills = [...state.playerSkills]
+      let pickCount = newPicks.reduce<number>((picks, curr) => (picks + (curr === null ? 0 : 1)), 0)
+      let skillIsUlt = state.ultimates.findIndex(el => el.abilityId === skill.abilityId) !== -1
+      let playerUltIdx = state.activePick % 10 + 30
+      let playerPicks = newPicks.filter((_, i) => i % 10 === state.activePick % 10)
+      if (pickCount > 40)
+        return state
+
+
+
 
       if (newPicks.includes(skill.abilityId)) {
         newPicks = newPicks.map(el => el !== skill.abilityId ? el : null)
       } else {
-        newPicks[state.activePick] = skill.abilityId
+        if (state.strictMode) {
+          if (skillIsUlt && playerPicks[3] !== null) {
+            return state
+          }
+          if (!skillIsUlt && !playerPicks.slice(0, 3).includes(null)) {
+            return state
+          }
+        }
+
+        if (skillIsUlt && state.strictMode) {
+          newPicks[playerUltIdx] = skill.abilityId
+        } else if (!skillIsUlt && state.strictMode) {
+          newPicks[playerPicks.findIndex(el => el === null) * 10 + state.activePick % 10] = skill.abilityId
+        } else {
+          newPicks[state.activePick] = skill.abilityId
+        }
       }
 
       if (state.playerSkills.includes(skill.abilityId)) {
@@ -260,7 +296,7 @@ function App() {
         picks: newPicks,
         playerSkills: newPlayerSkills,
         changeId: state.changeId + 1,
-        activePick: newPicks.findIndex(el => el === null)
+        activePick: nextPick(newPicks)
 
       }
     })
@@ -359,7 +395,7 @@ function App() {
         {room === '' && <li><Popover2 data-testid="joinRoomBtn" placement='bottom' content={<JoinRoom joinRoom={sendJoinRoom} />}>Join Room</Popover2></li>}
         {room !== '' && <li data-testid="leaveRoomBtn" onClick={() => emitLeaveRoom()}>Leave Room</li>}
         {room !== '' && <RoomInfo room={room} roomCount={state.roomCount} />}
-        <li><Controls randomizeBoard={randomizeBoard} resetBoard={resetBoard} /></li>
+        <li><Controls randomizeBoard={randomizeBoard} resetBoard={resetBoard} strictMode={strictMode} setStrictMode={setStrictMode} /></li>
         <li><Help /></li>
       </Header>
       {ultAndSkillLoaded && <DraftBoard>
