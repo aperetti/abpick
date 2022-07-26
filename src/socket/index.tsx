@@ -17,7 +17,7 @@ export interface SocketAppState {
     skills: Array<number | null>;
     picks: (number|null)[];
     stateId: number;
-    roomCount?: number
+    roomCount?: number;
     _id: string;
     room: string;
 }

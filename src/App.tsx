@@ -94,13 +94,24 @@ function notNull<T>(x: T | null): x is T {
 }
 
 const nextPick = (pickArray: (number | null)[]) => {
+
   let summaryArray = pickArray.reduce<number[]>((summary, el, idx) => {
     summary[idx % 10] += el !== null ? 1 : 0
     return summary
   }, Array(10).fill(0))
   let minValue = Math.min(...summaryArray)
+  if (minValue % 2 === 1)
+    summaryArray.reverse()
   let minIdx = summaryArray.findIndex(el => el === minValue)
-  return minIdx + 10 * minValue
+  let next = 0
+  console.log(minIdx)
+  console.log(minValue)
+  if (minValue % 2 === 1)
+    next = 9 - minIdx + 10 * minValue
+  else
+    next = minIdx + 10 * minValue
+
+  return next
 }
 
 function shuffle<T>(array: Array<T>): Array<T> {
@@ -194,6 +205,9 @@ function App() {
         let newActiveSlot = state.activeSlot
         if (socketState.skills[state.activeSlot * 4] !== null)
           newActiveSlot = -1
+        else {
+          newActiveSlot = nextPick(state.picks)
+        }
         let newPlayerSkills = [...state.playerSkills].filter(el => socketState.skills.includes(el))
         return {
           ...state,
@@ -230,7 +244,7 @@ function App() {
 
       newSkills.splice(slot * 4, 4, ...skillResponse.map(el => el.abilityId))
       let newPicks = [...state.picks].map(el => newSkills.includes(el) ? el : null)
-      let newActivePick = newPicks.findIndex(el => el === null)
+      let newActivePick = nextPick(newPicks)
       return ({
         ...state,
         picks: newPicks,
