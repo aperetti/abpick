@@ -1,6 +1,6 @@
 import React, { PropsWithChildren} from 'react';
 import './index.css';
-import { Menu, MenuItem, Switch } from '@blueprintjs/core';
+import { Menu, MenuItem } from '@blueprintjs/core';
 import { Popover2 } from '@blueprintjs/popover2';
 interface Props {
   randomizeBoard: () => void

@@ -3,6 +3,7 @@ import './index.css';
 import Skill from '../types/Skill';
 import scepter from '../images/scepter.png'
 import shard from '../images/shard.png'
+import { Icon } from '@blueprintjs/core';
 
 interface Props {
   skill: Skill
@@ -53,6 +54,8 @@ function SkillImage(props: PropsWithChildren<Props>) {
           </div>}
       </div>}
       {img && !loading && <img src={img} alt={skill.dname}></img>}
+        {skill.abilityId === -1 &&
+          <Icon icon='search' size={32} style={{position: "absolute", top:16, left:16}}/>}
     </div>
   );
 }

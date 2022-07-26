@@ -86,7 +86,7 @@ let initialState: State = {
   picks: Array(40).fill(null),
   changeId: 0,
   editMode: false,
-  strictMode: false
+  strictMode: true
 }
 
 function notNull<T>(x: T | null): x is T {
@@ -102,8 +102,6 @@ const nextPick = (pickArray: (number | null)[]) => {
   let minIdx = summaryArray.findIndex(el => el === minValue)
   return minIdx + 10 * minValue
 }
-
-const filterNotPicked = (pickHistory: number[]) => (skill: Skill): boolean => skill !== null && !pickHistory.includes(skill.abilityId)
 
 function shuffle<T>(array: Array<T>): Array<T> {
   let newArray = [...array]
@@ -134,9 +132,16 @@ function App() {
   const [cookies, setCookie, removeCookie] = useCookies(['room']);
 
   let setStrictMode = useCallback((strict: boolean) => setState(state => ({ ...state, strictMode: strict })), [])
-  const mapSkills = useCallback((skillIds: Array<number | null>): Array<Skill | null> => {
+
+  const mapNullableSkills = useCallback((skillIds: Array<number | null>): Array<Skill | null> => {
     return skillIds.map(skillId => {
       return (skillId && skillDict[skillId] && { id: skillId, ...skillDict[skillId] }) || null
+    })
+  }, [skillDict])
+
+  const mapSkills = useCallback((skillIds: number[]): Skill[] => {
+    return skillIds.map(skillId => {
+      return ({ id: skillId, ...skillDict[skillId]})
     })
   }, [skillDict])
 
@@ -226,7 +231,6 @@ function App() {
       newSkills.splice(slot * 4, 4, ...skillResponse.map(el => el.abilityId))
       let newPicks = [...state.picks].map(el => newSkills.includes(el) ? el : null)
       let newActivePick = newPicks.findIndex(el => el === null)
-      console.log(newActivePick)
       return ({
         ...state,
         picks: newPicks,
@@ -297,7 +301,6 @@ function App() {
         playerSkills: newPlayerSkills,
         changeId: state.changeId + 1,
         activePick: nextPick(newPicks)
-
       }
     })
 
@@ -352,8 +355,8 @@ function App() {
 
   let turn = useMemo(() => pickHistory.length, [pickHistory])
   let filteredUlts = useMemo(() => ultimates.filter(ult => !skills.includes(ult.abilityId)), [ultimates, skills])
-  let mappedSkills = useMemo(() => mapSkills(skills), [mapSkills, skills])
-  let mappedHistory = useMemo(() => mapSkills(picks), [mapSkills, picks])
+  let mappedSkills = useMemo(() => mapNullableSkills(skills), [mapNullableSkills, skills])
+  let mappedHistory = useMemo(() => mapNullableSkills(picks), [mapNullableSkills, picks])
   let heroSlot = useMemo(() => skills.reduce<Array<string | null>>((prev, el, i) => {
     if (i % 4 === 0 && el !== null) {
       return [...prev, state.heroNameDict[state.skillHeroDict[el]]]
@@ -363,6 +366,8 @@ function App() {
       return prev
     }
   }, []), [state.heroNameDict, state.skillHeroDict, skills])
+  let unPickedSkillIds = useMemo(() => skills.filter((skillId): skillId is number => skillId !== null && !pickHistory.includes(skillId)), [skills, pickHistory])
+
   let ultAndSkillLoaded = state.skillsHydrated && state.ultimatesHydrated
 
   let sortPredict = useCallback((metric: keyof Predict, sort: ("asc" | "desc")) => (el1: Skill, el2: Skill) => {
@@ -378,12 +383,11 @@ function App() {
       return el1.predict[metric] - el2.predict[metric]
     return 0
   }, [])
-  let ultPicked = useMemo(() => mapSkills(state.playerSkills).reduce((ultFound, el) => Boolean(ultFound || el?.ult), false), [mapSkills, state.playerSkills])
+  let ultPicked = useMemo(() => mapNullableSkills(state.playerSkills).reduce((ultFound, el) => Boolean(ultFound || el?.ult), false), [mapNullableSkills, state.playerSkills])
   let filteredPredictSkills = useMemo(() => mappedSkills
     .filter((el): el is Skill => Boolean(el !== null && el.predict && !pickHistory.includes(el.abilityId)
       && !(ultPicked && el.ult) && (pickHistory.length > 29 || el.stats.survival[pickHistory.length + 10] < .6))
       , [ultPicked, pickHistory]), [mappedSkills, pickHistory, ultPicked])
-
   let goldPredictSkill = useMemo(() => [...filteredPredictSkills].sort(sortPredict('gold', 'desc')), [filteredPredictSkills, sortPredict])
   let damagePredictSkill = useMemo(() => [...filteredPredictSkills].sort(sortPredict('damage', 'desc')), [filteredPredictSkills, sortPredict])
   let winPredictSkill = useMemo(() => [...filteredPredictSkills].sort(sortPredict('win', 'desc')), [filteredPredictSkills, sortPredict])
@@ -444,7 +448,7 @@ function App() {
               {[0, 2, 4, 6, 8, 10].map(slot => {
                 return (
                   (state.activeSlot === slot && <HeroSearch closeSearch={closeSearch} ultimates={state.ultimates} setHero={setHero} slot={ultLu[slot]} />) ||
-                  <HeroSearchName activePick={state.activePick} slot={slot} skills={mappedHistory} key={`hero-search-${slot}`} onClick={() => setState({ ...state, activeSlot: slot })} hero={heroSlot[ultLu[slot]]} />
+                  <HeroSearchName allSkills={state.skillDict} availableSkills={unPickedSkillIds} activePick={state.activePick} slot={slot} skills={mappedHistory} key={`hero-search-${slot}`} onClick={() => setState({ ...state, activeSlot: slot })} hero={heroSlot[ultLu[slot]]} />
                 )
               })}
             </Card>
@@ -457,7 +461,7 @@ function App() {
               {[1, 3, 5, 7, 9, 11].map(slot => {
                 return (
                   (state.activeSlot === slot && <HeroSearch closeSearch={closeSearch} ultimates={state.ultimates} setHero={setHero} slot={ultLu[slot]} />) ||
-                  <HeroSearchName activePick={state.activePick} slot={slot} skills={mappedHistory} key={`hero-search-${slot}`} onClick={() => setState({ ...state, activeSlot: slot })} hero={heroSlot[ultLu[slot]]} />
+                  <HeroSearchName allSkills={state.skillDict} availableSkills={unPickedSkillIds} activePick={state.activePick} slot={slot} skills={mappedHistory} key={`hero-search-${slot}`} onClick={() => setState({ ...state, activeSlot: slot })} hero={heroSlot[ultLu[slot]]} />
                 )
               })}
             </Card>
@@ -468,7 +472,7 @@ function App() {
 
         <DraftBoardColumn location='overview'>
           {skills.filter(notNull).length > 0 && <SurvivalContainer>
-            <SkillDatatable pickSkill={setPickedSkill} turn={turn} skills={mappedSkills.filter(notNull).filter(filterNotPicked(pickHistory))} />
+            <SkillDatatable pickSkill={setPickedSkill} turn={turn} skills={mapSkills(unPickedSkillIds)} />
           </SurvivalContainer>}
         </DraftBoardColumn>
       </DraftBoard>}
