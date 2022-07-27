@@ -198,9 +198,6 @@ function App() {
     setState(state => ({ ...state, loading: true }))
     try {
       setState(state => {
-        let newActiveSlot = state.activeSlot
-        if (socketState.skills[state.activeSlot * 4] !== null)
-          newActiveSlot = -1
         let newPlayerSkills = [...state.playerSkills].filter(el => socketState.skills.includes(el))
         return {
           ...state,
@@ -209,7 +206,6 @@ function App() {
           picks: socketState.picks,
           stateId: socketState.stateId,
           roomCount: socketState.roomCount || state.roomCount,
-          activeSlot: newActiveSlot,
           activePick: nextPick(socketState.picks),
           loading: false
         }
