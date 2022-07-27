@@ -13,7 +13,7 @@
 }
 
 .Draft-board-left {
-    margin-left: 60px;
+    margin-left: 90px;
     display: flex;
     flex-direction: column;
     order: 1;
@@ -29,7 +29,7 @@
     display: flex;
     flex-direction: column;
     order: 3;
-    margin-right: 50px;
+    margin-right: 70px;
 }
 
 .Draft-board-combos {

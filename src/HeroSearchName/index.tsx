@@ -89,10 +89,10 @@ function HeroSearchName({ onClick, hero, slot, skills, activePick, availableSkil
       setLoadingCombos(false)
     }
 
-    if (!noPickedSkills)
+    if (!noPickedSkills && selectedSlot)
       getCombos()
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedSlot])
+  }, [activePick])
 
   return (
     <div className="hero-name-container" onClick={onClick}>
