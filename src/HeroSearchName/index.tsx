@@ -7,7 +7,6 @@ import SkillImage from '../SkillImage';
 import Skill from '../types/Skill';
 import './index.css';
 import Card from '../Card'
-import SkillDetails from '../SkillDetails';
 
 interface Props {
   onClick: () => void,
@@ -16,12 +15,13 @@ interface Props {
   skills: NullableSkillList,
   activePick: number,
   availableSkills: number[],
-  allSkills: SkillDict
+  allSkills: SkillDict,
+  isUlt: (skillId: number) => boolean
 }
 
 interface ComboProps {
-  combos: ComboResponse[]
-  allSkills: SkillDict
+  combos: ComboResponse[],
+  allSkills: SkillDict,
 }
 
 function ComboContent({ combos, allSkills }: PropsWithChildren<ComboProps>) {
@@ -49,7 +49,7 @@ function ComboContent({ combos, allSkills }: PropsWithChildren<ComboProps>) {
   )
 }
 
-function HeroSearchName({ onClick, hero, slot, skills, activePick, availableSkills, allSkills }: PropsWithChildren<Props>) {
+function HeroSearchName({ onClick, hero, slot, skills, activePick, availableSkills, allSkills, isUlt }: PropsWithChildren<Props>) {
   let selectedSlot = activePick % 10 === slot && activePick < 40
   let [bestCombos, setBestCombos] = useState<ComboResponse[]>([])
   let [loadingCombos, setLoadingCombos] = useState(false)
@@ -66,11 +66,23 @@ function HeroSearchName({ onClick, hero, slot, skills, activePick, availableSkil
 
   useEffect(() => {
     let getCombos = async () => {
-      let pickedSkills = slotSkills
+      let nonNullSlotSkills = slotSkills
         .filter((el): el is Skill => el !== null)
+
+      let hasUlt = nonNullSlotSkills
+        .map(el=> isUlt(el.abilityId)).some((el) => el)
+
+      let hasAllSkills = nonNullSlotSkills
+        .filter(el => !isUlt(el.abilityId)).length === 3
+
+      let pickedSkills = nonNullSlotSkills
         .map(el => el.abilityId)
+
+      let filteredAvailableSkills = availableSkills
+        .filter(el => !((hasUlt && isUlt(el)) || (hasAllSkills && !isUlt(el)) || false))
+
       setLoadingCombos(true)
-      let combos = await getBestCombos(pickedSkills, availableSkills)
+      let combos = await getBestCombos(pickedSkills, filteredAvailableSkills)
 
       setBestCombos(combos)
 
@@ -84,7 +96,10 @@ function HeroSearchName({ onClick, hero, slot, skills, activePick, availableSkil
 
   return (
     <div className="hero-name-container" onClick={onClick}>
-      <Popover2 position={slot % 2 !== 0 ? 'right' : 'left'} isOpen={Boolean(!loadingCombos && selectedSlot && bestCombos.length > 0)} content={<ComboContent combos={bestCombos} allSkills={allSkills} />} >
+      <Popover2
+        position={slot % 2 !== 0 ? 'right' : 'left'}
+        isOpen={Boolean(!loadingCombos && selectedSlot && bestCombos.length > 0)}
+        content={<ComboContent combos={bestCombos} allSkills={allSkills} />} >
         <div className={`hero-name-skills-container ${selectedSlot ? 'hero-name-skills-glow' : ''}`}>
           {slot !== 10 && slot !== 11 && slotSkills.map(skillSlot =>
             (
