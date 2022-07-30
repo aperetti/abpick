@@ -1,5 +1,5 @@
 import { Popover2 } from '@blueprintjs/popover2';
-import React, { PropsWithChildren, MouseEvent, useEffect, useState, useMemo} from 'react';
+import React, { PropsWithChildren, useEffect, useState, useMemo} from 'react';
 import getBestCombos, { ComboResponse } from '../api/getCombos';
 import { NullableSkillList, SkillDict } from '../App';
 import EmptySkillTile from '../EmptySkillTile';
@@ -7,7 +7,6 @@ import SkillImage from '../SkillImage';
 import Skill from '../types/Skill';
 import './index.css';
 import Card from '../Card'
-import { Icon } from '@blueprintjs/core';
 
 interface Props {
   onClick: () => void,
@@ -51,7 +50,6 @@ function HeroSearchName({ onClick, hero, slot, skills, activePick, availableSkil
   let selectedSlot = activePick % 10 === slot && activePick < 40
   let [bestCombos, setBestCombos] = useState<ComboResponse[]>([])
   let [loadingCombos, setLoadingCombos] = useState(false)
-  let [pinCombo, setPinCombo] = useState(false)
   let [lastSkillString, setLastSkillString] = useState('')
 
   let slotSkills = [0, 1, 2, 3].map(el => {
@@ -96,11 +94,7 @@ function HeroSearchName({ onClick, hero, slot, skills, activePick, availableSkil
     setLastSkillString(skillString)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activePick])
-  let position = slot % 2 !== 0 ? 'right' : 'left'
-  let openHandler = (event: MouseEvent<HTMLElement>) => {
-    event.stopPropagation()
-    setPinCombo(!pinCombo)
-  }
+
   let filteredCombos = useMemo(() => bestCombos.reduce<ComboResponse[]>((filteredCombos, combo) => {
     let foundDuplicate = filteredCombos.find(el => el.skill === combo.skill)
     if (foundDuplicate === undefined)
