@@ -1,3 +1,4 @@
+import { GenericType } from "typescript"
 
 export type SkillClick = (skill: Skill) => (ctrlClick: boolean) => void
 
@@ -13,6 +14,7 @@ interface ComboSkill {
     winPct: number
     synergy: number
 }
+
 interface Skill {
     abilityId: number
     abilityName: number

@@ -14,11 +14,11 @@ interface Props {
   winPct?: number
   disableAgs?: boolean
   small?: boolean
+  showPick?: boolean
 }
 
-function SkillImage(props: PropsWithChildren<Props>) {
-  let { skill, onClick, picked, edit, synergy, winPct, disableAgs} = props
-  let small = Boolean(props.small)
+function SkillImage({ small, showPick, skill, onClick, picked, edit, synergy, winPct, disableAgs }: PropsWithChildren<Props>) {
+  small = Boolean(small)
 
   let [img, setImg] = useState('')
   let [loading, setLoading] = useState(false)
@@ -47,15 +47,20 @@ function SkillImage(props: PropsWithChildren<Props>) {
         {skill.stats.scepterWinW && <div className='skill-scepter'><img width={'20px'} src={scepter} alt={"Scepter Win"}></img></div>}
         {skill.stats.shardWinW && <div className='skill-shard'><img width={'20px'} src={shard} alt={"Shard Win"}></img></div>}
       </div>}
-      {(synergy || winPct) && <div className='skill-overlay'>
+      {(synergy || winPct) && <div className={`skill-overlay ${small ? 'skill-overlay-small' : ''}`}>
         {synergy &&
           <div style={{ color: `${synergy > 0 ? 'darkgrey' : 'red'}` }}>
-            Win {synergy > 0 ? '+' : ''}{(synergy * 100).toFixed(0)}%
+            {!small ? 'Win' : ''} {synergy > 0 ? '+' : ''}{(synergy * 100).toFixed(0)}%
           </div>}
       </div>}
+      {showPick &&
+        <div className='skill-pick-overlay'>
+          {skill.stats.mean.toFixed(0)}
+        </div>
+      }
       {img && !loading && <img src={img} alt={skill.dname}></img>}
-        {skill.abilityId === -1 &&
-          <Icon icon='search' size={32} style={{position: "absolute", top:16, left:16}}/>}
+      {skill.abilityId === -1 &&
+        <Icon icon='search' size={32} style={{ position: "absolute", top: 16, left: 16 }} />}
     </div>
   );
 }

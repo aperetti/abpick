@@ -1,12 +1,12 @@
 import { Popover2 } from '@blueprintjs/popover2';
-import React, { PropsWithChildren, useEffect, useState, useMemo} from 'react';
+import React, { PropsWithChildren, useEffect, useState, useMemo } from 'react';
 import getBestCombos, { ComboResponse } from '../api/getCombos';
 import { NullableSkillList, SkillDict } from '../App';
 import EmptySkillTile from '../EmptySkillTile';
 import SkillImage from '../SkillImage';
-import Skill from '../types/Skill';
 import './index.css';
 import Card from '../Card'
+import { filterNonNullSkills, mapPlayerSkills } from '../utils';
 
 interface Props {
   onClick: () => void,
@@ -17,6 +17,8 @@ interface Props {
   availableSkills: number[],
   allSkills: SkillDict,
   isUlt: (skillId: number) => boolean
+  setCombo: (slot: number, combos: ComboResponse[]) => void
+  slotCombos: ComboResponse[]
 }
 
 interface ComboProps {
@@ -24,11 +26,7 @@ interface ComboProps {
   allSkills: SkillDict,
 }
 
-function ComboContent({ combos, allSkills}: PropsWithChildren<ComboProps>) {
-
-
-
-
+function ComboContent({ combos, allSkills }: PropsWithChildren<ComboProps>) {
   return (
     <>
       {combos.length > 0 && <Card title='Combo'>
@@ -37,7 +35,7 @@ function ComboContent({ combos, allSkills}: PropsWithChildren<ComboProps>) {
             let skill = allSkills[el.skill]
             let synergy = el.winPct - el.avgWinPct
             return (
-              <><SkillImage synergy={synergy} disableAgs skill={skill} /></>
+              <><SkillImage showPick synergy={synergy} disableAgs skill={skill} /></>
             )
           })}
         </div>
@@ -46,28 +44,23 @@ function ComboContent({ combos, allSkills}: PropsWithChildren<ComboProps>) {
   )
 }
 
-function HeroSearchName({ onClick, hero, slot, skills, activePick, availableSkills, allSkills, isUlt }: PropsWithChildren<Props>) {
+function HeroSearchName({ slotCombos, setCombo, onClick, hero, slot, skills, activePick, availableSkills, allSkills, isUlt }: PropsWithChildren<Props>) {
   let selectedSlot = activePick % 10 === slot && activePick < 40
-  let [bestCombos, setBestCombos] = useState<ComboResponse[]>([])
   let [loadingCombos, setLoadingCombos] = useState(false)
   let [lastSkillString, setLastSkillString] = useState('')
 
-  let slotSkills = [0, 1, 2, 3].map(el => {
-    let skillSlotIdx = el * 10 + slot
-    return skills[skillSlotIdx]
-  })
+  let slotSkills = mapPlayerSkills(slot, skills)
 
   let skillString = JSON.stringify(slotSkills.map(el => el?.abilityId))
 
   let noPickedSkills = slotSkills.filter(el => el === null).length === 4
 
-  if (noPickedSkills && bestCombos.length !== 0)
-    setBestCombos([])
+  if (noPickedSkills && slotCombos.length !== 0)
+    setCombo(slot, [])
 
   useEffect(() => {
     let getCombos = async () => {
-      let nonNullSlotSkills = slotSkills
-        .filter((el): el is Skill => el !== null)
+      let nonNullSlotSkills = filterNonNullSkills(slotSkills)
 
       let hasUlt = nonNullSlotSkills
         .map(el => isUlt(el.abilityId)).some((el) => el)
@@ -84,7 +77,7 @@ function HeroSearchName({ onClick, hero, slot, skills, activePick, availableSkil
       setLoadingCombos(true)
       let combos = await getBestCombos(pickedSkills, filteredAvailableSkills)
 
-      setBestCombos(combos)
+      setCombo(slot, combos)
 
       setLoadingCombos(false)
     }
@@ -95,18 +88,23 @@ function HeroSearchName({ onClick, hero, slot, skills, activePick, availableSkil
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activePick])
 
-  let filteredCombos = useMemo(() => bestCombos.reduce<ComboResponse[]>((filteredCombos, combo) => {
-    let foundDuplicate = filteredCombos.find(el => el.skill === combo.skill)
-    if (foundDuplicate === undefined)
-      return [...filteredCombos, combo]
-    else if (foundDuplicate.winPct < combo.winPct)
-      return [...filteredCombos.filter(filterCombo => filterCombo.skill !== combo.skill), combo]
+  let filteredCombos = useMemo(() => {
+    if (![10, 11].includes(slot))
+      return slotCombos.reduce<ComboResponse[]>((filteredCombos, combo) => {
+        let foundDuplicate = filteredCombos.find(el => el.skill === combo.skill)
+        if (foundDuplicate === undefined)
+          return [...filteredCombos, combo]
+        else if (foundDuplicate.winPct < combo.winPct)
+          return [...filteredCombos.filter(filterCombo => filterCombo.skill !== combo.skill), combo]
+        else
+          return filteredCombos
+      }, [])
     else
-      return filteredCombos
-  }, []), [bestCombos])
+      return []
+  }, [slotCombos, slot])
 
-  .filter(el => availableSkills.includes(el.skill) && (Math.abs(el.winPct - el.avgWinPct) > .03))
-  .sort((el1, el2) => Math.abs(el2.winPct) - el1.winPct)
+    .filter(el => availableSkills.includes(el.skill) && (Math.abs(el.winPct - el.avgWinPct) > .03))
+    .sort((el1, el2) => Math.abs(el2.winPct) - el1.winPct)
   return (
     <div className="hero-name-container" onClick={onClick}>
       <Popover2

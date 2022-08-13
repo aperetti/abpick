@@ -1,7 +1,11 @@
 .Player-Skill-Container {
     display: flex;
+    flex-direction: column;
+    align-items: center;
     gap: 5px;
-    padding: 5px;
+    padding: 10px;
+    position: relative;
+    width: 225px;
 }
 
 .Player-Skill-Container-Picked-Skills {
@@ -10,13 +14,80 @@
 
 }
 
+.player-skill-predict-container {
+    display: flex;
+    justify-content: center;
+    gap: 5px;
+    padding: 5px;
+}
+
+.player-skill-chart-container {
+    /* background-color: var(--bg-dark); */
+    position: relative;
+    width: 100%;
+    min-height: 200px;
+}
+
+.player-skill-chart {
+    width: 300px;
+    position: absolute;
+    top: 0px;
+    left: -50px;
+}
+
+.player-skill-skills {
+    display: inline-flex;
+    justify-content: center;
+    gap: 3px;
+    width: 100%;
+}
+
+.player-skill-skills:first-child {
+    flex-shrink: 3;
+}
+
+.hero-slot-label {
+    padding: 5px !important;
+    width: 100%;
+}
+
+.player-skill-section {
+    /* text-align: left; */
+    width: 100%;
+    background-color: var(--bg-light);
+    padding-bottom: 4px;
+    font-size: 12px;
+    text-transform: uppercase;
+}
+
+.player-skill-section-title {
+    color: darkgray;
+    background-color: var(--bg-dark);
+    padding: 4px;
+    margin-bottom: 4px;
+}
+
+.hero-slot-button {
+    display: inline-flex;
+    justify-content: flex-start;
+    width: 100%;
+}
+
+.player-skill-combos {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 3px;
+}
+
 .player-skill-predict-label {
     transform: rotate(180deg);
     text-orientation: inherit;
     writing-mode: tb;
     vertical-align: middle;
     line-height: 30px;
-    padding: 0;
+    padding: 0px;
 
 }
 
@@ -26,4 +97,3 @@
     text-transform: uppercase;
     padding-bottom: 5px;
 }
-

@@ -1,9 +1,0 @@
-.Picked-skills {
-    display: grid;
-    grid-template-columns: repeat(4,64px);
-    gap: 7px;
-}
-
-.Picked-highlight {
-    box-shadow: 0px 0px 10px darkkhaki;
-}

@@ -14,8 +14,8 @@ interface Props {
   turn: number;
 }
 
-function SkillTile(props: PropsWithChildren<Props>) {
-  let { skill, onClick, picked, turn, skills} = props
+function SkillTile({ skill, onClick, picked, turn, skills}: PropsWithChildren<Props>) {
+
   let survive = skill?.stats?.survival && skill?.stats?.survival[Math.min(turn + 10, 47)] < .50
   let win = skill?.stats?.winRate > .5
   let winCss = !picked && win && survive

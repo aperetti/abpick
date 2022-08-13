@@ -7,6 +7,19 @@
     color: darkgray;
 }
 
+.skill-overlay-small {
+    font-size: x-small;
+}
+
+.skill-pick-overlay {
+    position: absolute;
+    top: 0px;
+    right: 0px;
+    font-size: x-small;
+    background-color: rgba(10,20,10,.8);
+    color: darkgrey;
+    padding: 1px;
+}
 .skill-small {
     height: 42px;
     width: 42px;

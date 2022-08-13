@@ -21,9 +21,6 @@ async function predict(playerSkills: number[], availableSkills: number[], dispat
     let predictions: Predicts = await res.json()
 
     dispatch(state => {
-        if (playerSkills !== state.playerSkills)
-         return state
-
         let updatedSkillDict: SkillDict = {...state.skillDict}
         for (const [skillId, pred] of Object.entries(predictions)) {
             if (skillId in updatedSkillDict && skillId)
