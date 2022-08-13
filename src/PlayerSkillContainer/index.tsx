@@ -22,6 +22,7 @@ interface PlayerSkillProps {
   selectedPlayer: number
   slotHeros: (string | null)[]
   combos: ComboResponse[]
+  topComboDenies: ComboResponse[]
 }
 
 interface Props { }
@@ -108,7 +109,7 @@ function BalanceChart({ predictMetrics }: PropsWithChildren<BalanceChartProps>) 
 }
 const defaultSkillMetrics = { gold: 0, xp: 0, damage: 0, kills: 0, deaths: 0, assists: 0, tower: 0 }
 
-function PlayerSkillContainer({ combos, setSelectedPlayer, slotHeros, selectedPlayer, pickedSkills, skillDict, winPredictSkill, goldPredictSkill, damagePredictSkill }: PropsWithChildren<PlayerSkillProps>) {
+function PlayerSkillContainer({ topComboDenies, combos, setSelectedPlayer, slotHeros, selectedPlayer, pickedSkills, skillDict, winPredictSkill, goldPredictSkill, damagePredictSkill }: PropsWithChildren<PlayerSkillProps>) {
   let playerSkills = mapPlayerSkills(selectedPlayer, pickedSkills)
   let [metrics, setMetrics] = useState<SkillMetric>(defaultSkillMetrics)
   let [lastRun, setLastRun] = useState<number[]>([])
@@ -174,6 +175,11 @@ function PlayerSkillContainer({ combos, setSelectedPlayer, slotHeros, selectedPl
           {badCombos.map(el => <SkillImage synergy={el.winPct - el.avgWinPct} skill={skillDict[el.skill]} small disableAgs showPick />)}
         </div>
       </PlayerSection>}
+      <PlayerSection title="Best Deny Picks">
+        <div className='player-skill-combos'>
+          {topComboDenies.map(el => <SkillImage synergy={el.winPct-el.avgWinPct} skill={skillDict[el.skill]} small disableAgs showPick/>)}
+        </div>
+      </PlayerSection>
       <PlayerSection title="Predictions">
         <div className='player-skill-predict-container'>
           <PlayerPredictSkills category='Win'>

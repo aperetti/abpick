@@ -362,6 +362,19 @@ function App() {
       return { ...state, combos: newCombos }
     })
   }, [setState])
+  let topComboDenies = useMemo(() => {
+    let dire = selectedPlayer % 2 === 1
+    let slots = [0,2,4,6,8]
+    let offset = dire ? 0 : 1
+    let allCombos: ComboResponse[] = []
+    slots.forEach((el) => {
+      allCombos = [...allCombos, ...combos[el+offset]]
+    })
+    return filterAvailableCombos(allCombos, picks)
+      .sort((el1, el2) => (el2.winPct - el2.avgWinPct) - (el1.winPct- el1.avgWinPct))
+      .filter(el => (el.winPct - el.avgWinPct) > .03)
+      .slice(0,4)
+  } ,[combos, picks, selectedPlayer])
 
   return (
     <div className="App bp4-dark">
@@ -424,6 +437,7 @@ function App() {
           <Card title="Player Skills">
             <PlayerSkillContainer
               combos={filterAvailableCombos(combos[selectedPlayer], picks)}
+              topComboDenies={topComboDenies}
               slotHeros={Array.from({ length: 10 }).map((_, i) => {
                 let skill = skills[ultLu[i] * 4]
                 if (skill !== null)
