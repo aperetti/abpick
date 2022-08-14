@@ -69,16 +69,16 @@ function SkillDatatable(props: PropsWithChildren<Props>) {
       avgPick: skill.stats.mean,
       pickRate: skill.stats.pickRate,
       pickRateRounds: skill.stats.pickRateRounds[round],
-      winRate: skill.stats.winRate,
-      winRateRounds: skill.stats.winRateRounds[round],
-      survival: skill.stats.survival[turn],
-      survival5: skill.stats.survival[turn + 5],
+      // winRate: skill.stats.winRate,
+      // winRateRounds: skill.stats.winRateRounds[round],
+      // survival: skill.stats.survival[turn],
+      // survival5: skill.stats.survival[turn + 5],
       survival10: skill.stats.survival[turn + 10],
-      predictWin: skill.predict?.win,
-      predictGold: skill.predict?.gold,
-      predictDamage: skill.predict?.damage,
-      predictKills: skill.predict?.kills,
-      predictDeaths: skill.predict?.deaths
+      // predictWin: skill.predict?.win,
+      // predictGold: skill.predict?.gold,
+      // predictDamage: skill.predict?.damage,
+      // predictKills: skill.predict?.kills,
+      // predictDeaths: skill.predict?.deaths
     })
 
     )
@@ -87,15 +87,15 @@ function SkillDatatable(props: PropsWithChildren<Props>) {
     { field: "abilityName", headerName: "Ability", renderCell: (params: GridRenderCellParams) => <SkillImage skill={params.row} onClick={pickSkill(params.row)} disableAgs /> },
     { field: "avgPick", headerName: "Average Pick", valueFormatter: valueFormatter(1, 0) },
     { field: "pickRate", headerName: "Percent Picked", valueFormatter: valueFormatter(100, 0, '%') },
-    { field: "winRate", headerName: "Win Rate", valueFormatter: valueFormatter(100, 0, '%') },
-    { field: "survival", headerName: "Survival", valueFormatter: valueFormatter(100, 0, '%') },
-    { field: "survival5", headerName: "Survival 5 Turns", valueFormatter: valueFormatter(100, 0, '%') },
+    // { field: "winRate", headerName: "Win Rate", valueFormatter: valueFormatter(100, 0, '%') },
+    // { field: "survival", headerName: "Survival", valueFormatter: valueFormatter(100, 0, '%') },
+    // { field: "survival5", headerName: "Survival 5 Turns", valueFormatter: valueFormatter(100, 0, '%') },
     { field: "survival10", headerName: "Survival 10 Turns", valueFormatter: valueFormatter(100, 0, '%') },
-    { field: "predictWin", headerName: "Win Prediction", valueFormatter: valueFormatter(100, 0, '%') },
-    { field: "predictDamage", headerName: "Damage Prediction", valueFormatter: valueFormatter(.001 * 45, 1, 'k') },
-    { field: "predictGold", headerName: "Gold Prediction", valueFormatter: valueFormatter(.001 * 45, 1, 'k') },
-    { field: "predictKills", headerName: "Kill Prediction", valueFormatter: valueFormatter(45, 0) },
-    { field: "predictDeaths", headerName: "Death Prediction", valueFormatter: valueFormatter(45, 0) }
+    // { field: "predictWin", headerName: "Win Prediction", valueFormatter: valueFormatter(100, 0, '%') },
+    // { field: "predictDamage", headerName: "Damage Prediction", valueFormatter: valueFormatter(.001 * 45, 1, 'k') },
+    // { field: "predictGold", headerName: "Gold Prediction", valueFormatter: valueFormatter(.001 * 45, 1, 'k') },
+    // { field: "predictKills", headerName: "Kill Prediction", valueFormatter: valueFormatter(45, 0) },
+    // { field: "predictDeaths", headerName: "Death Prediction", valueFormatter: valueFormatter(45, 0) }
   ], [pickSkill])
 
   return (

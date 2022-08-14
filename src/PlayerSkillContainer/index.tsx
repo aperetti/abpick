@@ -6,7 +6,7 @@ import { arrEquals, filterNonNullSkills, mapPlayerSkills } from '../utils';
 import './index.css';
 import { VictoryChart, VictoryTheme, VictoryArea, VictoryPolarAxis } from 'victory'
 import { Select2, ItemRenderer } from '@blueprintjs/select';
-import {  Card, MenuItem } from '@blueprintjs/core';
+import { Card, MenuItem } from '@blueprintjs/core';
 import { ComboResponse } from '../api/getCombos';
 import getMetrics, { SkillMetric } from '../api/getMetrics';
 import { SkillDict } from '../App';
@@ -68,14 +68,26 @@ const renderHeroSlot: ItemRenderer<HeroNameSlot> = (heroSlotName, { handleClick,
   );
 };
 
-const maxMetrics: SkillMetric = { gold: 867.8086734693877, damage: 1438.3006506578222,
-  kills: 0.44662115816169506, deaths: 0.6,
-  assists: 0.6341845486598189, xp: 882.3650793650794, tower: 401.89011475472904 }
+const maxMetrics: SkillMetric = {
+  gold: 867, damage: 1438,
+  kills: 0.44, deaths: 0.09,
+  assists: 0.63, xp: 882, tower: 401
+}
+
+const minMetrics: SkillMetric = {
+  gold: 318, damage: 270,
+  kills: .06, deaths: 0.27,
+  assists: 0.17, xp: 445, tower: 8.4
+}
 
 type MetricKey = keyof SkillMetric
 
 function BalanceChart({ predictMetrics }: PropsWithChildren<BalanceChartProps>) {
-  let data = Object.entries(predictMetrics).map(([metric, value]) => ({ x: metric, y: value / maxMetrics[metric as MetricKey]}))
+  let data = Object.entries(predictMetrics).map(([metric, value]) => {
+    let maxMet = maxMetrics[metric as MetricKey]
+    let minMet = minMetrics[metric as MetricKey]
+    return { x: metric, y: (value - minMet) / (maxMet - minMet) }
+  })
   return (
     <VictoryChart polar
       theme={VictoryTheme.grayscale}
@@ -90,7 +102,7 @@ function BalanceChart({ predictMetrics }: PropsWithChildren<BalanceChartProps>) 
             grid: { stroke: "grey", strokeWidth: 0.25, opacity: 0.5 }
           }}
           labelPlacement="perpendicular"
-          axisValue={i + 1} label={el.x}
+          axisValue={i + 1} label={el.x === "deaths" ? "survival" : el.x}
           tickCount={4}
           tickFormat={el => ''}
           tickValues={[.25, .5, .75]}
@@ -177,7 +189,7 @@ function PlayerSkillContainer({ topComboDenies, combos, setSelectedPlayer, slotH
       </PlayerSection>}
       <PlayerSection title="Best Deny Picks">
         <div className='player-skill-combos'>
-          {topComboDenies.map(el => <SkillImage synergy={el.winPct-el.avgWinPct} skill={skillDict[el.skill]} small disableAgs showPick/>)}
+          {topComboDenies.map(el => <SkillImage synergy={el.winPct - el.avgWinPct} skill={skillDict[el.skill]} small disableAgs showPick />)}
         </div>
       </PlayerSection>
       <PlayerSection title="Predictions">
