@@ -86,7 +86,12 @@ function BalanceChart({ predictMetrics }: PropsWithChildren<BalanceChartProps>) 
   let data = Object.entries(predictMetrics).map(([metric, value]) => {
     let maxMet = maxMetrics[metric as MetricKey]
     let minMet = minMetrics[metric as MetricKey]
-    return { x: metric, y: (value - minMet) / (maxMet - minMet) }
+    let newValue = (value - minMet) / (maxMet - minMet)
+    if (value === 0) {
+      newValue = 0
+    }
+
+    return { x: metric, y: newValue}
   })
   return (
     <VictoryChart polar
