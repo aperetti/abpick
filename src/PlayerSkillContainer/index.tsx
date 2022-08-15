@@ -168,11 +168,11 @@ function PlayerSkillContainer({ topComboDenies, combos, setSelectedPlayer, slotH
         <Card className='hero-slot-label' interactive elevation={3}>{`${selectedPlayer === 2 ? 'R' : 'D'}${Math.floor(selectedPlayer / 2) + 1} - ${slotHeros[selectedPlayer] || 'Select a hero'}`}</Card>
       </HeroSlotSelect>
       <div className={`player-skill-skills`}>
-        {playerSkills.map(skillSlot =>
+        {playerSkills.map((skillSlot, i) =>
           (
             skillSlot &&
-            <SkillImage small disableAgs skill={skillSlot} />) ||
-          <EmptySkillTile small />
+            <SkillImage key={i} small disableAgs skill={skillSlot} />) ||
+          <EmptySkillTile key={i} small />
         )}
       </div>
       <div className='player-skill-chart-container'>
@@ -184,17 +184,17 @@ function PlayerSkillContainer({ topComboDenies, combos, setSelectedPlayer, slotH
 
       {goodCombos.length > 0 && <PlayerSection title='Best Combos'>
         <div className='player-skill-combos'>
-          {goodCombos.map(el => <SkillImage synergy={el.winPct - el.avgWinPct} skill={skillDict[el.skill]} small disableAgs showPick />)}
+          {goodCombos.map((el,i) => <SkillImage key={i} synergy={el.winPct - el.avgWinPct} skill={skillDict[el.skill]} small disableAgs showPick />)}
         </div>
       </PlayerSection>}
       {badCombos.length > 0 && <PlayerSection title='Worst Combos'>
         <div className='player-skill-combos'>
-          {badCombos.map(el => <SkillImage synergy={el.winPct - el.avgWinPct} skill={skillDict[el.skill]} small disableAgs showPick />)}
+          {badCombos.map((el, i) => <SkillImage key={i} synergy={el.winPct - el.avgWinPct} skill={skillDict[el.skill]} small disableAgs showPick />)}
         </div>
       </PlayerSection>}
       <PlayerSection title="Best Deny Picks">
         <div className='player-skill-combos'>
-          {topComboDenies.map(el => <SkillImage synergy={el.winPct - el.avgWinPct} skill={skillDict[el.skill]} small disableAgs showPick />)}
+          {topComboDenies.map((el, i) => <SkillImage key={i} synergy={el.winPct - el.avgWinPct} skill={skillDict[el.skill]} small disableAgs showPick />)}
         </div>
       </PlayerSection>
       <PlayerSection title="Predictions">

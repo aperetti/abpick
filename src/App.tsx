@@ -286,6 +286,18 @@ function App() {
   })), [setState])
 
   useEffect(() => {
+    const roomRegex = /^\/(\w{5})$/
+    let match = window.location.pathname.match(roomRegex)
+    if (match && room !== match[1]) {
+      console.log("joining")
+      console.log(window.location.pathname.slice(1, 6))
+      sendJoinRoom(window.location.pathname.slice(1, 6))
+    }
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [sendJoinRoom])
+
+  useEffect(() => {
     onRoomLeft(() => {
       setState(state => ({
         ...state,
@@ -364,17 +376,17 @@ function App() {
   }, [setState])
   let topComboDenies = useMemo(() => {
     let dire = selectedPlayer % 2 === 1
-    let slots = [0,2,4,6,8]
+    let slots = [0, 2, 4, 6, 8]
     let offset = dire ? 0 : 1
     let allCombos: ComboResponse[] = []
     slots.forEach((el) => {
-      allCombos = [...allCombos, ...combos[el+offset]]
+      allCombos = [...allCombos, ...combos[el + offset]]
     })
     return filterAvailableCombos(allCombos, picks)
-      .sort((el1, el2) => (el2.winPct - el2.avgWinPct) - (el1.winPct- el1.avgWinPct))
+      .sort((el1, el2) => (el2.winPct - el2.avgWinPct) - (el1.winPct - el1.avgWinPct))
       .filter(el => (el.winPct - el.avgWinPct) > .03)
-      .slice(0,4)
-  } ,[combos, picks, selectedPlayer])
+      .slice(0, 4)
+  }, [combos, picks, selectedPlayer])
 
   return (
     <div className="App bp4-dark">
@@ -412,7 +424,7 @@ function App() {
             <Card title="Radiant Team" contentClass="picked-container-content">
               {[0, 2, 4, 6, 8, 10].map(slot => {
                 return (
-                  (state.activeSlot === slot && <HeroSearch closeSearch={closeSearch} ultimates={state.ultimates} setHero={setHero} slot={ultLu[slot]} />) ||
+                  (state.activeSlot === slot && <HeroSearch key={slot} closeSearch={closeSearch} ultimates={state.ultimates} setHero={setHero} slot={ultLu[slot]} />) ||
                   <HeroSearchName setCombo={setCombo} slotCombos={combos[slot]} isUlt={isUlt} allSkills={state.skillDict} availableSkills={availableSkillIds} activePick={activePick} slot={slot} skills={mappedHistory} key={`hero-search-${slot}`} onClick={() => setState({ ...state, activeSlot: slot })} hero={heroSlot[ultLu[slot]]} />
                 )
               })}
@@ -425,7 +437,7 @@ function App() {
             <Card title="Dire Team" contentClass="picked-container-content">
               {[1, 3, 5, 7, 9, 11].map(slot => {
                 return (
-                  (state.activeSlot === slot && <HeroSearch closeSearch={closeSearch} ultimates={state.ultimates} setHero={setHero} slot={ultLu[slot]} />) ||
+                  (state.activeSlot === slot && <HeroSearch key={slot} closeSearch={closeSearch} ultimates={state.ultimates} setHero={setHero} slot={ultLu[slot]} />) ||
                   <HeroSearchName setCombo={setCombo} slotCombos={combos[slot]} isUlt={isUlt} allSkills={state.skillDict} availableSkills={availableSkillIds} activePick={activePick} slot={slot} skills={mappedHistory} key={`hero-search-${slot}`} onClick={() => setState({ ...state, activeSlot: slot })} hero={heroSlot[ultLu[slot]]} />
                 )
               })}

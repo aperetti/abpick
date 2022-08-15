@@ -53,9 +53,9 @@ function HeroSearchName({ slotCombos, setCombo, onClick, hero, slot, skills, act
 
   let skillString = JSON.stringify(slotSkills.map(el => el?.abilityId))
 
-  let noPickedSkills = slotSkills.filter(el => el === null).length === 4
+  let noPickedSkills = slotSkills.filter(el => el === null || el === undefined).length === 4
 
-  if (noPickedSkills && slotCombos.length !== 0)
+  if (noPickedSkills && slotCombos?.length !== 0)
     setCombo(slot, [])
 
   useEffect(() => {
@@ -84,6 +84,7 @@ function HeroSearchName({ slotCombos, setCombo, onClick, hero, slot, skills, act
 
     if (!noPickedSkills && (selectedSlot || lastSkillString !== skillString))
       getCombos()
+
     setLastSkillString(skillString)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activePick])
@@ -114,11 +115,11 @@ function HeroSearchName({ slotCombos, setCombo, onClick, hero, slot, skills, act
         interactionKind='hover'
         content={<ComboContent combos={filteredCombos} allSkills={allSkills} />} >
         <div className={`hero-name-skills-container ${selectedSlot ? 'hero-name-skills-glow' : ''}`}>
-          {slot !== 10 && slot !== 11 && slotSkills.map(skillSlot =>
+          {slot !== 10 && slot !== 11 && slotSkills.map((skillSlot, i) =>
             (
               skillSlot &&
-              <SkillImage small disableAgs skill={skillSlot} />) ||
-            <EmptySkillTile small />
+              <SkillImage key={i} small disableAgs skill={skillSlot} />) ||
+            <EmptySkillTile key={i} small />
 
           )}
           {/* {![10, 11].includes(slot) && <Icon onClick={openHandler} className={`hero-search-open-combo-${position}`} icon={pinCombo ? 'star' : 'star-empty'} />} */}
