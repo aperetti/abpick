@@ -289,8 +289,6 @@ function App() {
     const roomRegex = /^\/(\w{5})$/
     let match = window.location.pathname.match(roomRegex)
     if (match && room !== match[1]) {
-      console.log("joining")
-      console.log(window.location.pathname.slice(1, 6))
       sendJoinRoom(window.location.pathname.slice(1, 6))
     }
 
