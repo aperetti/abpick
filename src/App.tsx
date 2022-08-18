@@ -29,6 +29,7 @@ import Help from './Help';
 import RoomInfo from './RoomInfo';
 import { filterAvailableCombos, filterAvailableSkills, filterNonNullSkills, mapPlayerSkills, nextPick } from './utils';
 import { ComboResponse } from './api/getCombos';
+import InvokerAlert from './InvokerAlert';
 
 /*
 TODO
@@ -113,6 +114,7 @@ function App() {
   const ultLu = [0, 11, 1, 10, 2, 9, 3, 8, 4, 7, 5, 6]
   let [state, setState] = useState<State>(initialState)
   let { heroNameDict, skillHeroDict, skillDict, skills, ultimates, room, editMode, picks, heroSkillDict: heroDict, strictMode, selectedPlayer, combos } = state
+  let [ invokerOpen, setInvokerOpen ] = useState(false)
   let activePick = useMemo(() => nextPick(picks), [picks])
   let pickHistory = useMemo(() => filterNonNullSkills(picks), [picks])
   const [cookies, setCookie, removeCookie] = useCookies(['room']);
@@ -190,32 +192,39 @@ function App() {
     }
   }, [])
 
-  const setHero = useCallback((ult: Ultimate, slot: number, ultOnly?: boolean) => {
-    setState(state => {
-      let skillResponse = heroDict[ult.heroId]
-      let newSkills = [...state.skills]
-      if (ultOnly) {
-        newSkills.splice(slot * 4 + 3, 1, ult.abilityId)
-        let newPicks = [...state.picks].map(el => newSkills.includes(el) ? el : null)
-        return ({
-          ...state,
-          picks: newPicks,
-          skills: newSkills,
-          changeId: state.changeId + 1
-        })
-      }
-
-      newSkills.splice(slot * 4, 4, ...skillResponse.map(el => el.abilityId))
+  let setHeroState = useCallback((skills: number[], ultId: number | null, slot: number, ultOnly?: boolean) => setState(state => {
+    let newSkills = [...state.skills]
+    if (ultOnly) {
+      newSkills.splice(slot * 4 + 3, 1, ultId)
       let newPicks = [...state.picks].map(el => newSkills.includes(el) ? el : null)
       return ({
         ...state,
         picks: newPicks,
-        activeSlot: state.activeSlot + 1,
         skills: newSkills,
         changeId: state.changeId + 1
       })
+    }
+
+    newSkills.splice(slot * 4, 4, ...skills)
+    let newPicks = [...state.picks].map(el => newSkills.includes(el) ? el : null)
+    return ({
+      ...state,
+      picks: newPicks,
+      activeSlot: state.activeSlot + 1,
+      skills: newSkills,
+      changeId: state.changeId + 1
     })
-  }, [heroDict])
+  }), [])
+
+  const setHero = useCallback((ult: Ultimate, slot: number, ultOnly?: boolean) => {
+    if (ult.heroId === 74) {
+      setInvokerOpen(true)
+    } else {
+      let skills = heroDict[ult.heroId].map(el => el.abilityId)
+      setHeroState(filterNonNullSkills(skills), ult.abilityId, slot, ultOnly)
+    }
+
+  }, [setHeroState])
 
   const closeSearch = useCallback(() => setState(state => ({ ...state, activeSlot: -1 })), [])
 
@@ -396,6 +405,12 @@ function App() {
         <li><Controls randomizeBoard={randomizeBoard} resetBoard={resetBoard} strictMode={strictMode} setStrictMode={setStrictMode} /></li>
         <li><Help /></li>
       </Header>
+      <InvokerAlert
+        isOpen={invokerOpen}
+        dismissPopop={() => setInvokerOpen(false)}
+        setSkills={(skills: number[]) => setHeroState(skills, null, ultLu[state.activeSlot])}
+        invokerSkills={heroDict[74]}
+      />
       {ultAndSkillLoaded && <DraftBoard>
         <DraftBoardColumn location={'center'}>
 
