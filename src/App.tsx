@@ -223,8 +223,7 @@ function App() {
       let skills = heroDict[ult.heroId].map(el => el.abilityId)
       setHeroState(filterNonNullSkills(skills), ult.abilityId, slot, ultOnly)
     }
-
-  }, [setHeroState])
+  }, [setHeroState, heroDict])
 
   const closeSearch = useCallback(() => setState(state => ({ ...state, activeSlot: -1 })), [])
 
