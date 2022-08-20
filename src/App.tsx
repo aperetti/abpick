@@ -19,7 +19,7 @@ import Controls from './Controls'
 import JoinRoom from './JoinRoom';
 import HeroSearch from './HeroSearch';
 import SkillDatatable from './SkillDatatable';
-import getAllSkills from './api/getAllSkills';
+import getAllSkills, { HeroSkillStatDict } from './api/getAllSkills';
 import HeroSkillDict from './types/HeroDict';
 import HeroSearchName from './HeroSearchName';
 import { Popover2 } from '@blueprintjs/popover2';
@@ -51,6 +51,7 @@ export interface State {
   heroNameDict: HeroNameDict,
   skillHeroDict: SkillHeroDict,
   heroSkillDict: HeroSkillDict,
+  heroSkillStatDict: HeroSkillStatDict,
   skillDict: SkillDict,
   skills: NullableSkillIdList,
   ultimates: Ultimate[],
@@ -72,6 +73,7 @@ let initialState: State = {
   combos: Object.assign({}, Array(10).fill([])),
   heroNameDict: {},
   skillHeroDict: {},
+  heroSkillStatDict: {},
   selectedPlayer: 0,
   heroSkillDict: {},
   skillDict: {},
@@ -109,9 +111,9 @@ function shuffle<T>(array: Array<T>): Array<T> {
   return newArray;
 }
 
+const ultLu = [0, 11, 1, 10, 2, 9, 3, 8, 4, 7, 5, 6]
 
 function App() {
-  const ultLu = [0, 11, 1, 10, 2, 9, 3, 8, 4, 7, 5, 6]
   let [state, setState] = useState<State>(initialState)
   let { heroNameDict, skillHeroDict, skillDict, skills, ultimates, room, editMode, picks, heroSkillDict: heroDict, strictMode, selectedPlayer, combos } = state
   let [ invokerOpen, setInvokerOpen ] = useState(false)
@@ -393,6 +395,17 @@ function App() {
       .filter(el => (el.winPct - el.avgWinPct) > .03)
       .slice(0, 4)
   }, [combos, picks, selectedPlayer])
+  let heroSkillStats = useMemo(() => {
+    let skill = skills[ultLu[selectedPlayer] * 4]
+    if (skill) {
+      let heroSkillStats = state.heroSkillStatDict[skillHeroDict[skill]]
+      heroSkillStats.skills = heroSkillStats.skills.filter(el => skills.includes(el.id))
+      return heroSkillStats
+    }
+    else
+      return null
+
+  }, [state.heroSkillStatDict, skillHeroDict, selectedPlayer, skills])
 
   return (
     <div className="App bp4-dark">
@@ -469,6 +482,7 @@ function App() {
                 else
                   return null
               })}
+              heroSkillStats={heroSkillStats}
               damagePredictSkill={damagePredictSkill}
               winPredictSkill={winPredictSkill}
               goldPredictSkill={goldPredictSkill}

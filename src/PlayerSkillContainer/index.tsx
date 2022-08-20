@@ -10,11 +10,14 @@ import { Card, MenuItem } from '@blueprintjs/core';
 import { ComboResponse } from '../api/getCombos';
 import getMetrics, { SkillMetric } from '../api/getMetrics';
 import { SkillDict } from '../App';
+import { HeroSkillStats } from '../api/getAllSkills';
+import { ELEVATION_1 } from '@blueprintjs/core/lib/esm/common/classes';
 
 
 interface PlayerSkillProps {
   pickedSkills: Array<Skill | null>
   skillDict: SkillDict
+  heroSkillStats: null | HeroSkillStats
   winPredictSkill: Skill[]
   goldPredictSkill: Skill[]
   damagePredictSkill: Skill[]
@@ -91,7 +94,7 @@ function BalanceChart({ predictMetrics }: PropsWithChildren<BalanceChartProps>) 
       newValue = 0
     }
 
-    return { x: metric, y: newValue}
+    return { x: metric, y: newValue }
   })
   return (
     <VictoryChart polar
@@ -126,7 +129,7 @@ function BalanceChart({ predictMetrics }: PropsWithChildren<BalanceChartProps>) 
 }
 const defaultSkillMetrics = { gold: 0, xp: 0, damage: 0, kills: 0, deaths: 0, assists: 0, tower: 0 }
 
-function PlayerSkillContainer({ topComboDenies, combos, setSelectedPlayer, slotHeros, selectedPlayer, pickedSkills, skillDict, winPredictSkill, goldPredictSkill, damagePredictSkill }: PropsWithChildren<PlayerSkillProps>) {
+function PlayerSkillContainer({ heroSkillStats, topComboDenies, combos, setSelectedPlayer, slotHeros, selectedPlayer, pickedSkills, skillDict, winPredictSkill, goldPredictSkill, damagePredictSkill }: PropsWithChildren<PlayerSkillProps>) {
   let playerSkills = mapPlayerSkills(selectedPlayer, pickedSkills)
   let [metrics, setMetrics] = useState<SkillMetric>(defaultSkillMetrics)
   let [lastRun, setLastRun] = useState<number[]>([])
@@ -184,7 +187,7 @@ function PlayerSkillContainer({ topComboDenies, combos, setSelectedPlayer, slotH
 
       {goodCombos.length > 0 && <PlayerSection title='Best Combos'>
         <div className='player-skill-combos'>
-          {goodCombos.map((el,i) => <SkillImage key={i} synergy={el.winPct - el.avgWinPct} skill={skillDict[el.skill]} small disableAgs showPick />)}
+          {goodCombos.map((el, i) => <SkillImage key={i} synergy={el.winPct - el.avgWinPct} skill={skillDict[el.skill]} small disableAgs showPick />)}
         </div>
       </PlayerSection>}
       {badCombos.length > 0 && <PlayerSection title='Worst Combos'>
@@ -197,6 +200,13 @@ function PlayerSkillContainer({ topComboDenies, combos, setSelectedPlayer, slotH
           {topComboDenies.map((el, i) => <SkillImage key={i} synergy={el.winPct - el.avgWinPct} skill={skillDict[el.skill]} small disableAgs showPick />)}
         </div>
       </PlayerSection>
+      {heroSkillStats && heroSkillStats.skills.length > 0 && <PlayerSection title="Best Hero Model Skills">
+        <div className='player-skill-combos'>
+          {heroSkillStats.skills
+            .sort((el1, el2) => skillDict[el1.id].stats.mean - skillDict[el2.id].stats.mean)
+            .map((el, i) => <SkillImage key={i} synergy={el.winRate - .75 * .5 / Math.sqrt(el.matches) - skillDict[el.id].stats.winRate } skill={skillDict[el.id]} small disableAgs showPick />)}
+        </div>
+      </PlayerSection>}
       <PlayerSection title="Predictions">
         <div className='player-skill-predict-container'>
           <PlayerPredictSkills category='Win'>

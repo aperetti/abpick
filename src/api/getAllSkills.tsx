@@ -2,10 +2,24 @@ import HeroSkillDict from "../types/HeroDict"
 import {HeroNameDict, SkillDict, SkillHeroDict, State} from '../App'
 import { Dispatch, SetStateAction } from "react"
 
+interface HeroSkillStat {
+    id: number
+    winRate: number
+    matches: number
+}
+export interface HeroSkillStats {
+    _id: string
+    win_rate: number
+    skills: HeroSkillStat[]
+}
 interface AllSkillsResponse {
     skillDict: HeroSkillDict
-    heroDict: HeroNameDict
+    heroDict: HeroNameDict,
+    heroSkillStats: HeroSkillStats[]
 }
+
+export type HeroSkillStatDict = Record<string, HeroSkillStats>
+
 async function getAllSkills(dispatch: Dispatch<SetStateAction<State>>) {
     let res = await fetch(`/api/hero`, {headers: {'Content-Type': 'application/json'}})
     let json: AllSkillsResponse = await res.json()
@@ -19,7 +33,12 @@ async function getAllSkills(dispatch: Dispatch<SetStateAction<State>>) {
         skillHeroDict[el.abilityId] = Number(heroId)
        })
     }
-    dispatch(state => ({...state, skillHeroDict, heroNameDict: json.heroDict, heroSkillDict: json.skillDict, skillDict: skills, changeId: state.changeId + 1, skillsHydrated: true}))
+
+    let heroSkillStatDict: HeroSkillStatDict = {}
+    json.heroSkillStats.forEach(el => {
+        heroSkillStatDict[el._id] = el
+    })
+    dispatch(state => ({...state, skillHeroDict, heroSkillStatDict, heroNameDict: json.heroDict, heroSkillDict: json.skillDict, skillDict: skills, changeId: state.changeId + 1, skillsHydrated: true}))
 }
 
 export default getAllSkills
