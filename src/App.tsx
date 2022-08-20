@@ -28,7 +28,7 @@ import predict from './api/predict';
 import Help from './Help';
 import RoomInfo from './RoomInfo';
 import { filterAvailableCombos, filterAvailableSkills, filterNonNullSkills, mapPlayerSkills, nextPick } from './utils';
-import { ComboResponse } from './api/getCombos';
+import getBestCombos, { ComboResponse } from './api/getCombos';
 import InvokerAlert from './InvokerAlert';
 
 /*
@@ -48,6 +48,7 @@ export interface State {
   roomCount: number,
   selectedPlayer: number,
   combos: SlotComboDict,
+  allCombos: ComboResponse[],
   heroNameDict: HeroNameDict,
   skillHeroDict: SkillHeroDict,
   heroSkillDict: HeroSkillDict,
@@ -71,6 +72,7 @@ export interface State {
 let initialState: State = {
   roomCount: 1,
   combos: Object.assign({}, Array(10).fill([])),
+  allCombos: [],
   heroNameDict: {},
   skillHeroDict: {},
   heroSkillStatDict: {},
@@ -199,6 +201,16 @@ function App() {
     if (ultOnly) {
       newSkills.splice(slot * 4 + 3, 1, ultId)
       let newPicks = [...state.picks].map(el => newSkills.includes(el) ? el : null)
+      // TODO Grab all combos
+      // if (newSkills.every((el) => el !== null))
+      // {
+      //   getBestCombos([], newSkills as number[]).then((res, err) => {
+      //     setState(state => {
+      //       ...state,
+      //       combos
+      //     })
+      //   }
+      // }
       return ({
         ...state,
         picks: newPicks,
@@ -396,16 +408,19 @@ function App() {
       .slice(0, 4)
   }, [combos, picks, selectedPlayer])
   let heroSkillStats = useMemo(() => {
+    if (!skills)
+      return null
+
     let skill = skills[ultLu[selectedPlayer] * 4]
     if (skill) {
       let heroSkillStats = state.heroSkillStatDict[skillHeroDict[skill]]
-      heroSkillStats.skills = heroSkillStats.skills.filter(el => skills.includes(el.id))
+      heroSkillStats.skills = heroSkillStats.skills.filter(el => availableSkillIds.includes(el.id))
       return heroSkillStats
     }
     else
       return null
 
-  }, [state.heroSkillStatDict, skillHeroDict, selectedPlayer, skills])
+  }, [state.heroSkillStatDict, skillHeroDict, selectedPlayer, availableSkillIds, skills])
 
   return (
     <div className="App bp4-dark">
