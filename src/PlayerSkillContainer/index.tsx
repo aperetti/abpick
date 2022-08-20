@@ -195,11 +195,11 @@ function PlayerSkillContainer({ heroSkillStats, topComboDenies, combos, setSelec
           {badCombos.map((el, i) => <SkillImage key={i} synergy={el.winPct - el.avgWinPct} skill={skillDict[el.skill]} small disableAgs showPick />)}
         </div>
       </PlayerSection>}
-      <PlayerSection title="Best Deny Picks">
+      {topComboDenies.length > 0 && <PlayerSection title="Best Deny Picks">
         <div className='player-skill-combos'>
           {topComboDenies.map((el, i) => <SkillImage key={i} synergy={el.winPct - el.avgWinPct} skill={skillDict[el.skill]} small disableAgs showPick />)}
         </div>
-      </PlayerSection>
+      </PlayerSection>}
       {heroSkillStats && heroSkillStats.skills.length > 0 && <PlayerSection title="Best Hero Model Skills">
         <div className='player-skill-combos'>
           {heroSkillStats.skills
