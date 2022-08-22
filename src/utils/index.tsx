@@ -30,6 +30,12 @@ export const nextPick = (pickArray: (number | null)[]) => {
   return next
 }
 
+export const getPlayerNextTurn = (player: number, turn: number) => {
+ let playerPicks: number[] = [0,1,2,3].map((el,i) => i % 2 === 0 ? el * 10 + player : el * 10 + 9 - player)
+ return playerPicks.find(el => el > turn)
+}
+
+
 export const arrEquals = (arr1: number[], arr2: number[]) => {
   if (arr1.length !== arr2.length)
     return false

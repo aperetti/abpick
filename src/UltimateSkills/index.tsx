@@ -16,12 +16,12 @@ interface Props {
   pickHistory: number[]
   editMode: boolean
   turn: number
+  playerNextTurn: number | undefined
 }
 
 const slotLookup = [0, 1, 2, 9, 10, 11, 3, 4, 5, 6, 7, 8]
 
-function UltimateSkills(props: PropsWithChildren<Props>) {
-  let { skills, ultimates, setHero, setPickedSkill, pickHistory, editMode, turn } = props
+function UltimateSkills({ skills, ultimates, setHero, setPickedSkill, pickHistory, editMode, turn, playerNextTurn}: PropsWithChildren<Props>) {
   let [help, setHelp] = useState(false)
   return (
     <div className="Ultimate-content">
@@ -31,7 +31,7 @@ function UltimateSkills(props: PropsWithChildren<Props>) {
           if (!skill || editMode || ultOnly) {
             return <EmptyUltTile ultOnly={ultOnly} skill={skill} setHero={setHero} key={`empty-skill-${i}`} ultimates={ultimates} slot={slotLookup[i]}></EmptyUltTile>
           } else {
-            return <SkillTile skills={skills} turn={turn} data-testid={`ultSkillTile${i}`} picked={pickHistory.includes(skill.abilityId)} onClick={setPickedSkill(skill)} skill={skill}></SkillTile>
+            return <SkillTile playerNextTurn={playerNextTurn} skills={skills} turn={turn} data-testid={`ultSkillTile${i}`} picked={pickHistory.includes(skill.abilityId)} onClick={setPickedSkill(skill)} skill={skill}></SkillTile>
           }
         })}
       </div>

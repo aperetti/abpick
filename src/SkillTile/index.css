@@ -8,9 +8,14 @@
 
 .skill-badge {
     position: absolute;
-    width: 20px;
-    background-color: var(--bg-dark);
-    opacity: .7;
+    display: inline-flex;
+    padding: 2px 2px;
+    height: 16px;
+    top: 0;
+    left: 0;
+    width: 64px;
+    /* background-color: var(--bg-dark); */
+    /* opacity: .7; */
 }
 
 .skill-empty {

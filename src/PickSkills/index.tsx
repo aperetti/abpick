@@ -6,19 +6,27 @@ import EmptySkillTile from '../EmptySkillTile'
 
 interface Props {
   skills: Array<Skill | null>
-  slot: number;
+  slot: number
   setPickedSkill: SkillClick
-  pickHistory: number[];
+  pickHistory: number[]
   turn: number
+  playerNextTurn: number | undefined
 }
 
-function PickSkills(props: PropsWithChildren<Props>) {
-  let { skills, setPickedSkill, pickHistory, turn} = props
+
+
+function PickSkills({ skills, setPickedSkill, pickHistory, turn, playerNextTurn}: PropsWithChildren<Props>) {
   return (
     <div className="Pick-skills">
         {skills.map((skill, i) => {
           if (skill) {
-            return <SkillTile skills={skills.filter((el): el is Skill => el !== null)} turn={turn} key={`Pick-skill-${skill.abilityId}`} picked={pickHistory.includes(skill.abilityId)} onClick={setPickedSkill(skill)} skill={skill}></SkillTile>
+            return <SkillTile
+              playerNextTurn={playerNextTurn}
+              skills={skills.filter((el): el is Skill => el !== null)}
+              turn={turn} key={`Pick-skill-${skill.abilityId}`}
+              picked={pickHistory.includes(skill.abilityId)}
+              onClick={setPickedSkill(skill)}
+              skill={skill} />
           } else {
             return <EmptySkillTile key={`Empty-pick-skill-${i}`}></EmptySkillTile>
           }

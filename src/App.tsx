@@ -27,7 +27,7 @@ import PlayerSkillContainer from './PlayerSkillContainer';
 import predict from './api/predict';
 import Help from './Help';
 import RoomInfo from './RoomInfo';
-import { filterAvailableCombos, filterAvailableSkills, filterNonNullSkills, mapPlayerSkills, nextPick } from './utils';
+import { filterAvailableCombos, filterAvailableSkills, filterNonNullSkills, getPlayerNextTurn, mapPlayerSkills, nextPick } from './utils';
 import getBestCombos, { ComboResponse } from './api/getCombos';
 import InvokerAlert from './InvokerAlert';
 
@@ -118,7 +118,7 @@ const ultLu = [0, 11, 1, 10, 2, 9, 3, 8, 4, 7, 5, 6]
 function App() {
   let [state, setState] = useState<State>(initialState)
   let { heroNameDict, skillHeroDict, skillDict, skills, ultimates, room, editMode, picks, heroSkillDict: heroDict, strictMode, selectedPlayer, combos } = state
-  let [ invokerOpen, setInvokerOpen ] = useState(false)
+  let [invokerOpen, setInvokerOpen] = useState(false)
   let activePick = useMemo(() => nextPick(picks), [picks])
   let pickHistory = useMemo(() => filterNonNullSkills(picks), [picks])
   const [cookies, setCookie, removeCookie] = useCookies(['room']);
@@ -201,16 +201,7 @@ function App() {
     if (ultOnly) {
       newSkills.splice(slot * 4 + 3, 1, ultId)
       let newPicks = [...state.picks].map(el => newSkills.includes(el) ? el : null)
-      // TODO Grab all combos
-      // if (newSkills.every((el) => el !== null))
-      // {
-      //   getBestCombos([], newSkills as number[]).then((res, err) => {
-      //     setState(state => {
-      //       ...state,
-      //       combos
-      //     })
-      //   }
-      // }
+
       return ({
         ...state,
         picks: newPicks,
@@ -281,9 +272,6 @@ function App() {
         }
       }
 
-      if (activePick % 10 === state.selectedPlayer)
-        predict(filterNonNullSkills(mapPlayerSkills(state.selectedPlayer, state.skills)), filterAvailableSkills(state.skills, newPicks), setState)
-
       return {
         ...state,
         picks: newPicks,
@@ -292,6 +280,15 @@ function App() {
     })
 
   }, [activePick])
+
+  useEffect(() => {
+    console.log("effect pull combos")
+    if (skills.every(el => el !== null && el !== -1)) {
+      getBestCombos([], filterNonNullSkills(skills)).then(comboResponse => {
+        setState(state => ({ ...state, allCombos: comboResponse }))
+      }).catch(err => console.log(err))
+    }
+  }, [skills])
 
   useEffect(() => {
     getUltimates(setState)
@@ -414,13 +411,17 @@ function App() {
     let skill = skills[ultLu[selectedPlayer] * 4]
     if (skill) {
       let heroSkillStats = state.heroSkillStatDict[skillHeroDict[skill]]
-      heroSkillStats.skills = heroSkillStats.skills.filter(el => availableSkillIds.includes(el.id))
-      return heroSkillStats
+      if (heroSkillStats) {
+        heroSkillStats.skills = heroSkillStats.skills.filter(el => availableSkillIds.includes(el.id))
+        return heroSkillStats
+      }
     }
-    else
-      return null
+
+    return null
 
   }, [state.heroSkillStatDict, skillHeroDict, selectedPlayer, availableSkillIds, skills])
+
+  let playerNextTurn = useMemo(() => getPlayerNextTurn(selectedPlayer, turn), [selectedPlayer, turn])
 
   return (
     <div className="App bp4-dark">
@@ -444,7 +445,15 @@ function App() {
 
           <UltimateContainer>
             <Card title="Ultimates">
-              <UltimateSkills turn={turn} editMode={editMode} setPickedSkill={setPickedSkill} pickHistory={pickHistory} setHero={setHero} skills={mappedSkills} ultimates={filteredUlts} />
+              <UltimateSkills
+                playerNextTurn={playerNextTurn}
+                turn={turn}
+                editMode={editMode}
+                setPickedSkill={setPickedSkill}
+                pickHistory={pickHistory}
+                setHero={setHero}
+                skills={mappedSkills}
+                ultimates={filteredUlts} />
             </Card>
           </UltimateContainer>
 
@@ -452,7 +461,14 @@ function App() {
             <Card title="Standard Abilities" contentClass="pick-container-content">
               {[0, 11, 1, 10, 2, 9, 3, 8, 4, 7, 5, 6].map(slot => {
                 return (
-                  <PickSkills turn={turn} key={`standard-abilities-${slot}`} setPickedSkill={setPickedSkill} pickHistory={pickHistory} slot={slot} skills={mappedSkills.slice(slot * 4, slot * 4 + 3)} />)
+                  <PickSkills
+                    playerNextTurn={playerNextTurn}
+                    turn={turn}
+                    key={`standard-abilities-${slot}`}
+                    setPickedSkill={setPickedSkill}
+                    pickHistory={pickHistory}
+                    slot={slot}
+                    skills={mappedSkills.slice(slot * 4, slot * 4 + 3)} />)
               })}
             </Card>
           </PickContainer>
@@ -488,6 +504,7 @@ function App() {
         <DraftBoardColumn location='player'>
           <Card title="Player Skills">
             <PlayerSkillContainer
+              allCombos={state.allCombos}
               combos={filterAvailableCombos(combos[selectedPlayer], picks)}
               topComboDenies={topComboDenies}
               slotHeros={Array.from({ length: 10 }).map((_, i) => {

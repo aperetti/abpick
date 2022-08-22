@@ -15,9 +15,11 @@ interface Props {
   disableAgs?: boolean
   small?: boolean
   showPick?: boolean
+  gradeColor?: boolean
+  bottomText?: string
 }
 
-function SkillImage({ small, showPick, skill, onClick, picked, edit, synergy, winPct, disableAgs }: PropsWithChildren<Props>) {
+function SkillImage({ bottomText, small, showPick, skill, onClick, picked, edit, synergy, winPct, disableAgs }: PropsWithChildren<Props>) {
   small = Boolean(small)
 
   let [img, setImg] = useState('')
@@ -47,11 +49,14 @@ function SkillImage({ small, showPick, skill, onClick, picked, edit, synergy, wi
         {skill.stats.scepterWinW && <div className='skill-scepter'><img width={'20px'} src={scepter} alt={"Scepter Win"}></img></div>}
         {skill.stats.shardWinW && <div className='skill-shard'><img width={'20px'} src={shard} alt={"Shard Win"}></img></div>}
       </div>}
-      {(synergy || winPct) && <div className={`skill-overlay ${small ? 'skill-overlay-small' : ''}`}>
+      {(synergy || winPct || bottomText) && <div className={`skill-overlay ${small ? 'skill-overlay-small' : ''}`}>
         {synergy &&
           <div style={{ color: `${synergy > 0 ? 'darkgrey' : 'red'}` }}>
             {!small ? 'Win' : ''} {synergy > 0 ? '+' : ''}{(synergy * 100).toFixed(0)}%
           </div>}
+        {bottomText &&
+        <div style={{color: 'darkgrey'}}>{bottomText}</div>
+        }
       </div>}
       {showPick &&
         <div className='skill-pick-overlay'>
