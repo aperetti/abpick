@@ -298,6 +298,7 @@ function App() {
 
   let resetBoard = useCallback(() => setState(state => ({
     ...state,
+    allCombos: initialState.allCombos,
     picks: initialState.picks,
     skills: initialState.skills,
     changeId: state.changeId + 1
