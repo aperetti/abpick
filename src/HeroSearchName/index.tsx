@@ -6,7 +6,7 @@ import EmptySkillTile from '../EmptySkillTile';
 import SkillImage from '../SkillImage';
 import './index.css';
 import Card from '../Card'
-import { filterNonNullSkills, mapPlayerSkills } from '../utils';
+import { filterNonNullSkills, getCombos, mapPlayerSkills } from '../utils';
 
 interface Props {
   onClick: () => void,
@@ -18,7 +18,7 @@ interface Props {
   allSkills: SkillDict,
   isUlt: (skillId: number) => boolean
   setCombo: (slot: number, combos: ComboResponse[]) => void
-  slotCombos: ComboResponse[]
+  allCombos: ComboResponse[]
 }
 
 interface ComboProps {
@@ -44,54 +44,27 @@ function ComboContent({ combos, allSkills }: PropsWithChildren<ComboProps>) {
   )
 }
 
-function HeroSearchName({ slotCombos, setCombo, onClick, hero, slot, skills, activePick, availableSkills, allSkills, isUlt }: PropsWithChildren<Props>) {
+function HeroSearchName({ allCombos, onClick, hero, slot, skills, activePick, availableSkills, allSkills, isUlt }: PropsWithChildren<Props>) {
   let selectedSlot = activePick % 10 === slot && activePick < 40
-  let [loadingCombos, setLoadingCombos] = useState(false)
-  let [lastSkillString, setLastSkillString] = useState('')
+  let [combos, setCombos] = useState<ComboResponse[]>([])
 
   let slotSkills = mapPlayerSkills(slot, skills)
+  let slotSkillIds = filterNonNullSkills(slotSkills).map(el => el.abilityId)
+  let skillString =useMemo(() => JSON.stringify(slotSkills.map(el => el?.abilityId)), [slotSkills])
 
-  let skillString = JSON.stringify(slotSkills.map(el => el?.abilityId))
-
-  let noPickedSkills = slotSkills.filter(el => el === null || el === undefined).length === 4
-
-  if (noPickedSkills && slotCombos?.length !== 0)
-    setCombo(slot, [])
+  let noPickedSkills = useMemo(() => slotSkills.filter(el => el === null || el === undefined).length === 4, [slotSkills])
 
   useEffect(() => {
-    let getCombos = async () => {
-      let nonNullSlotSkills = filterNonNullSkills(slotSkills)
+    if (noPickedSkills)
+      return
 
-      let hasUlt = nonNullSlotSkills
-        .map(el => isUlt(el.abilityId)).some((el) => el)
+    setCombos(getCombos(allCombos, slotSkillIds))
 
-      let hasAllSkills = nonNullSlotSkills
-        .filter(el => !isUlt(el.abilityId)).length === 3
-
-      let pickedSkills = nonNullSlotSkills
-        .map(el => el.abilityId)
-
-      let filteredAvailableSkills = availableSkills
-        .filter(el => !((hasUlt && isUlt(el)) || (hasAllSkills && !isUlt(el)) || false))
-
-      setLoadingCombos(true)
-      let combos = await getBestCombos(pickedSkills, filteredAvailableSkills)
-
-      setCombo(slot, combos)
-
-      setLoadingCombos(false)
-    }
-
-    if (!noPickedSkills && (selectedSlot || lastSkillString !== skillString))
-      getCombos()
-
-    setLastSkillString(skillString)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [activePick])
+   }, [skillString])
 
   let filteredCombos = useMemo(() => {
     if (![10, 11].includes(slot))
-      return slotCombos.reduce<ComboResponse[]>((filteredCombos, combo) => {
+      return combos.reduce<ComboResponse[]>((filteredCombos, combo) => {
         let foundDuplicate = filteredCombos.find(el => el.skill === combo.skill)
         if (foundDuplicate === undefined)
           return [...filteredCombos, combo]
@@ -102,15 +75,15 @@ function HeroSearchName({ slotCombos, setCombo, onClick, hero, slot, skills, act
       }, [])
     else
       return []
-  }, [slotCombos, slot])
-
+  }, [combos, slot])
     .filter(el => availableSkills.includes(el.skill) && (Math.abs(el.winPct - el.avgWinPct) > .03))
     .sort((el1, el2) => Math.abs(el2.winPct) - el1.winPct)
+
   return (
     <div className="hero-name-container" onClick={onClick}>
       <Popover2
         position={slot % 2 !== 0 ? 'right' : 'left'}
-        disabled={!Boolean(!loadingCombos && filteredCombos.length > 0)}
+        disabled={filteredCombos.length === 0}
         isOpen={(selectedSlot && filteredCombos.length > 0) || undefined}
         interactionKind='hover'
         content={<ComboContent combos={filteredCombos} allSkills={allSkills} />} >
@@ -122,7 +95,6 @@ function HeroSearchName({ slotCombos, setCombo, onClick, hero, slot, skills, act
             <EmptySkillTile key={i} small />
 
           )}
-          {/* {![10, 11].includes(slot) && <Icon onClick={openHandler} className={`hero-search-open-combo-${position}`} icon={pinCombo ? 'star' : 'star-empty'} />} */}
         </div>
       </Popover2>
       <div className='hero-name-text '>

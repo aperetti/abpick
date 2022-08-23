@@ -2,7 +2,7 @@ import React, { useMemo, PropsWithChildren, useCallback, useState } from 'react'
 import EmptySkillTile from '../EmptySkillTile';
 import SkillImage from '../SkillImage';
 import Skill from '../types/Skill';
-import { arrEquals, filterNonNullSkills, mapPlayerSkills } from '../utils';
+import { arrEquals, filterNonNullSkills, getCombos, mapPlayerSkills } from '../utils';
 import './index.css';
 import { VictoryChart, VictoryTheme, VictoryArea, VictoryPolarAxis } from 'victory'
 import { Select2, ItemRenderer } from '@blueprintjs/select';
@@ -159,8 +159,7 @@ function PlayerSkillContainer({ allCombos, heroSkillStats, topComboDenies, combo
   }
 
   let sortCombo = useCallback((el1: ComboResponse, el2: ComboResponse) => (el2.winPct - el2.avgWinPct) - (el1.winPct - el1.avgWinPct), [])
-  let badCombos = combos.filter(el => el.winPct - el.avgWinPct < -.03).sort(sortCombo)
-  let goodCombos = combos.filter(el => el.winPct - el.avgWinPct > .03).sort(sortCombo)
+  let goodCombos = getCombos(allCombos, skillIds)
 
   let topCombos = useMemo(() => allCombos.sort(sortCombo).slice(0,10), [allCombos, sortCombo])
 
@@ -204,11 +203,7 @@ function PlayerSkillContainer({ allCombos, heroSkillStats, topComboDenies, combo
           {goodCombos.map((el, i) => <SkillImage key={i} synergy={el.winPct - el.avgWinPct} skill={skillDict[el.skill]} small disableAgs showPick />)}
         </div>
       </PlayerSection>}
-      {badCombos.length > 0 && <PlayerSection title='Worst Combos'>
-        <div className='player-skill-combos'>
-          {badCombos.map((el, i) => <SkillImage key={i} synergy={el.winPct - el.avgWinPct} skill={skillDict[el.skill]} small disableAgs showPick />)}
-        </div>
-      </PlayerSection>}
+
       {topComboDenies.length > 0 && <PlayerSection title="Best Deny Picks">
         <div className='player-skill-combos'>
           {topComboDenies.map((el, i) => <SkillImage key={i} synergy={el.winPct - el.avgWinPct} skill={skillDict[el.skill]} small disableAgs showPick />)}

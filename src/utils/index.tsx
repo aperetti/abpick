@@ -6,7 +6,7 @@ export const mapPlayerSkills = <T extends (Skill|number)>(slot: number, skills: 
     return skills[skillSlotIdx]
 })
 
-export const filterNonNullSkills = <T extends (Skill|number)>(skills: Array<T|null>) => skills.filter((el): el is T => el !== null)
+export const filterNonNullSkills = <T extends (Skill|number)>(skills: Array<T|null>) => skills.filter((el): el is T => el !== null && el !== undefined)
 
 export const filterAvailableSkills = (skills: (null|number)[], picks: (number|null)[]) => filterNonNullSkills(skills).filter(el => !picks.includes(el) && el !== -1)
 export const filterAvailableCombos = (combos: ComboResponse[], picks: (number|null)[]) => combos.filter(el => !picks.includes(el.skill))
@@ -46,4 +46,21 @@ export const arrEquals = (arr1: number[], arr2: number[]) => {
     }
   }
   return true
+}
+
+export const getCombos = (allCombos: ComboResponse[], skills: number[]) => {
+  return allCombos.reduce((summ, el) => {
+      if (skills.includes(el.picked))
+        return [...summ, el]
+
+      if (skills.includes(el.skill)){
+        let tempSkill = el.picked
+        el.picked = el.skill
+        el.skill = tempSkill
+        return [...summ, el]
+      }
+
+      return summ
+
+    }, [] as ComboResponse[])
 }

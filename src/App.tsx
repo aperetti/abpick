@@ -24,7 +24,6 @@ import HeroSkillDict from './types/HeroDict';
 import HeroSearchName from './HeroSearchName';
 import { Popover2 } from '@blueprintjs/popover2';
 import PlayerSkillContainer from './PlayerSkillContainer';
-import predict from './api/predict';
 import Help from './Help';
 import RoomInfo from './RoomInfo';
 import { filterAvailableCombos, filterAvailableSkills, filterNonNullSkills, getPlayerNextTurn, mapPlayerSkills, nextPick } from './utils';
@@ -481,7 +480,7 @@ function App() {
               {[0, 2, 4, 6, 8, 10].map(slot => {
                 return (
                   (state.activeSlot === slot && <HeroSearch key={slot} closeSearch={closeSearch} ultimates={state.ultimates} setHero={setHero} slot={ultLu[slot]} />) ||
-                  <HeroSearchName setCombo={setCombo} slotCombos={combos[slot]} isUlt={isUlt} allSkills={state.skillDict} availableSkills={availableSkillIds} activePick={activePick} slot={slot} skills={mappedHistory} key={`hero-search-${slot}`} onClick={() => setState({ ...state, activeSlot: slot })} hero={heroSlot[ultLu[slot]]} />
+                  <HeroSearchName setCombo={setCombo} allCombos={state.allCombos} isUlt={isUlt} allSkills={state.skillDict} availableSkills={availableSkillIds} activePick={activePick} slot={slot} skills={mappedHistory} key={`hero-search-${slot}`} onClick={() => setState({ ...state, activeSlot: slot })} hero={heroSlot[ultLu[slot]]} />
                 )
               })}
             </Card>
@@ -494,7 +493,7 @@ function App() {
               {[1, 3, 5, 7, 9, 11].map(slot => {
                 return (
                   (state.activeSlot === slot && <HeroSearch key={slot} closeSearch={closeSearch} ultimates={state.ultimates} setHero={setHero} slot={ultLu[slot]} />) ||
-                  <HeroSearchName setCombo={setCombo} slotCombos={combos[slot]} isUlt={isUlt} allSkills={state.skillDict} availableSkills={availableSkillIds} activePick={activePick} slot={slot} skills={mappedHistory} key={`hero-search-${slot}`} onClick={() => setState({ ...state, activeSlot: slot })} hero={heroSlot[ultLu[slot]]} />
+                  <HeroSearchName setCombo={setCombo} allCombos={state.allCombos} isUlt={isUlt} allSkills={state.skillDict} availableSkills={availableSkillIds} activePick={activePick} slot={slot} skills={mappedHistory} key={`hero-search-${slot}`} onClick={() => setState({ ...state, activeSlot: slot })} hero={heroSlot[ultLu[slot]]} />
                 )
               })}
             </Card>
