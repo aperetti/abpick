@@ -6,7 +6,7 @@ import { arrEquals, filterNonNullSkills, getSkillCombos, mapPlayerSkills } from 
 import './index.css';
 import { VictoryChart, VictoryTheme, VictoryArea, VictoryPolarAxis } from 'victory'
 import { Select2, ItemRenderer } from '@blueprintjs/select';
-import { Card, MenuItem } from '@blueprintjs/core';
+import { Card, Icon, MenuItem } from '@blueprintjs/core';
 import { ComboResponse } from '../api/getCombos';
 import getMetrics, { SkillMetric } from '../api/getMetrics';
 import { SkillDict } from '../App';
@@ -24,7 +24,6 @@ interface PlayerSkillProps {
   setSelectedPlayer: (playerSlot: number) => void
   selectedPlayer: number
   slotHeros: (string | null)[]
-  combos: ComboResponse[]
   topComboDenies: ComboResponse[]
   allCombos: ComboResponse[]
 }
@@ -48,10 +47,14 @@ interface PlayerSectionProps {
 }
 
 function PlayerSection({ title, children }: PropsWithChildren<PlayerSectionProps>) {
+  let [hide, setHide] = useState(false)
   return (
     <div className='player-skill-section'>
-      <div className='player-skill-section-title'>{title}</div>
-      {children}
+      <div className='player-skill-section-title' onClick={() => setHide(!hide)}>
+        {title}
+        <Icon size={12} style={{float: "right"}} icon={hide ? "expand-all" : "minimize"}/>
+      </div>
+      {!hide && children}
     </div>
   )
 }
@@ -130,11 +133,12 @@ function BalanceChart({ predictMetrics }: PropsWithChildren<BalanceChartProps>) 
 }
 const defaultSkillMetrics = { gold: 0, xp: 0, damage: 0, kills: 0, deaths: 0, assists: 0, tower: 0 }
 
-function PlayerSkillContainer({ allCombos, heroSkillStats, topComboDenies, combos, setSelectedPlayer, slotHeros, selectedPlayer, pickedSkills, skillDict, winPredictSkill, goldPredictSkill, damagePredictSkill }: PropsWithChildren<PlayerSkillProps>) {
+function PlayerSkillContainer({ allCombos, heroSkillStats, topComboDenies, setSelectedPlayer, slotHeros, selectedPlayer, pickedSkills, skillDict, winPredictSkill, goldPredictSkill, damagePredictSkill }: PropsWithChildren<PlayerSkillProps>) {
   let playerSkills = mapPlayerSkills(selectedPlayer, pickedSkills)
   let [metrics, setMetrics] = useState<SkillMetric>(defaultSkillMetrics)
   let [lastRun, setLastRun] = useState<number[]>([])
 
+  let pickedskillIds = filterNonNullSkills(pickedSkills).map(el => el.abilityId)
   let sortFn = useCallback((el1: HeroNameSlot, el2: HeroNameSlot) => {
     let l1 = el1.slot % 2 === 0 ? el1.slot : el1.slot + 100
     let l2 = el2.slot % 2 === 0 ? el2.slot : el2.slot + 100
@@ -159,7 +163,7 @@ function PlayerSkillContainer({ allCombos, heroSkillStats, topComboDenies, combo
   }
 
   let sortCombo = useCallback((el1: ComboResponse, el2: ComboResponse) => (el2.winPct - el2.avgWinPct) - (el1.winPct - el1.avgWinPct), [])
-  let goodCombos = getSkillCombos(allCombos, skillIds)
+  let goodCombos = getSkillCombos(allCombos, skillIds).slice(0,8)
 
   let topCombos = useMemo(() => allCombos.sort(sortCombo).slice(0,10), [allCombos, sortCombo])
 
@@ -197,7 +201,6 @@ function PlayerSkillContainer({ allCombos, heroSkillStats, topComboDenies, combo
         </div>
       </div>
 
-
       {goodCombos.length > 0 && <PlayerSection title='Best Combos'>
         <div className='player-skill-combos'>
           {goodCombos.map((el, i) => <SkillImage key={i} synergy={el.winPct - el.avgWinPct} skill={skillDict[el.skill]} small disableAgs showPick />)}
@@ -213,17 +216,19 @@ function PlayerSkillContainer({ allCombos, heroSkillStats, topComboDenies, combo
         <div className='player-skill-combos'>
           {heroSkillStats.skills
             .sort((el1, el2) => skillDict[el1.id].stats.mean - skillDict[el2.id].stats.mean)
+            .filter(el => !pickedskillIds.includes(el.id))
+            .slice(0,8)
             .map((el, i) => <SkillImage key={i} synergy={el.winRate - .75 * .5 / Math.sqrt(el.matches) - skillDict[el.id].stats.winRate } skill={skillDict[el.id]} small disableAgs showPick />)}
         </div>
       </PlayerSection>}
       {allCombos.length > 0  && <PlayerSection title='Best Combos'>
         <div className='player-skill-combos'>
-            {topCombos.map(combo => <TopCombo skillDict={skillDict} combo={combo}/>)}
+            {topCombos.map(combo => <TopCombo skillDict={skillDict} combo={combo} pickedSkills={pickedskillIds}/>)}
         </div>
       </PlayerSection>}
       {allCombos.length > 0  && <PlayerSection title='Most Combos'>
         <div className='player-skill-combos'>
-            {mostCombos.map(combo => <SkillImage showPick bottomText={`${combo[1]} Cs`} small skill={skillDict[combo[0]]} disableAgs />)}
+            {mostCombos.map(combo => <SkillImage picked={pickedskillIds.includes(combo[0])} showPick bottomText={`${combo[1]} Cs`} small skill={skillDict[combo[0]]} disableAgs />)}
         </div>
       </PlayerSection>}
 

@@ -7,16 +7,17 @@ import { ComboResponse } from '../api/getCombos';
 interface Props {
   combo: ComboResponse
   skillDict: SkillDict
+  pickedSkills: number[]
 }
 
-function TopCombo({combo, skillDict}: PropsWithChildren<Props>) {
+function TopCombo({combo, skillDict, pickedSkills}: PropsWithChildren<Props>) {
 
   return (
     <>
             <div>
               <div className='top-combos-combo'>
-                <SkillImage small skill={skillDict[combo.picked]} disableAgs/>
-                <SkillImage small skill={skillDict[combo.skill]} disableAgs/>
+                <SkillImage picked={pickedSkills.includes(combo.picked)} small skill={skillDict[combo.picked]} disableAgs/>
+                <SkillImage picked={pickedSkills.includes(combo.skill)} small skill={skillDict[combo.skill]} disableAgs/>
                 <div className='top-combos-overlay'>Win +{(100 * (combo.winPct - combo.avgWinPct)).toFixed(0)}%</div>
               </div>
             </div>

@@ -17,7 +17,6 @@ interface Props {
   availableSkills: number[],
   allSkills: SkillDict,
   isUlt: (skillId: number) => boolean
-  setCombo: (slot: number, combos: ComboResponse[]) => void
   allCombos: ComboResponse[]
 }
 
