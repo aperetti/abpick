@@ -1,10 +1,7 @@
-import React, { useMemo, PropsWithChildren } from 'react';
-import { NullableSkillList, SkillDict } from '../App';
+import React, { PropsWithChildren } from 'react';
+import {  SkillDict } from '../App';
 import SkillImage from '../SkillImage';
-import Skill from '../types/Skill';
 import './index.css';
-import { DraftBoardColumn } from '../DraftBoard'
-import Card from '../Card'
 import { ComboResponse } from '../api/getCombos';
 
 interface Props {

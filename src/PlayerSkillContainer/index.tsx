@@ -2,7 +2,7 @@ import React, { useMemo, PropsWithChildren, useCallback, useState } from 'react'
 import EmptySkillTile from '../EmptySkillTile';
 import SkillImage from '../SkillImage';
 import Skill from '../types/Skill';
-import { arrEquals, filterNonNullSkills, getCombos, mapPlayerSkills } from '../utils';
+import { arrEquals, filterNonNullSkills, getSkillCombos, mapPlayerSkills } from '../utils';
 import './index.css';
 import { VictoryChart, VictoryTheme, VictoryArea, VictoryPolarAxis } from 'victory'
 import { Select2, ItemRenderer } from '@blueprintjs/select';
@@ -159,7 +159,7 @@ function PlayerSkillContainer({ allCombos, heroSkillStats, topComboDenies, combo
   }
 
   let sortCombo = useCallback((el1: ComboResponse, el2: ComboResponse) => (el2.winPct - el2.avgWinPct) - (el1.winPct - el1.avgWinPct), [])
-  let goodCombos = getCombos(allCombos, skillIds)
+  let goodCombos = getSkillCombos(allCombos, skillIds)
 
   let topCombos = useMemo(() => allCombos.sort(sortCombo).slice(0,10), [allCombos, sortCombo])
 

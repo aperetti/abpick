@@ -6,7 +6,7 @@ import { ContextMenu2 } from '@blueprintjs/popover2';
 import SkillDetails from '../SkillDetails';
 import SkillImage from '../SkillImage';
 import { NullableSkillList } from '../App';
-import { Classes, Icon } from '@blueprintjs/core';
+import { Classes } from '@blueprintjs/core';
 
 interface Props {
   skill: Skill;
@@ -19,9 +19,9 @@ interface Props {
 
 
 function SkillTile({ skill, onClick, picked, turn, skills, playerNextTurn}: PropsWithChildren<Props>) {
-  let pastDue = turn > skill?.stats?.mean
-  let survival = (playerNextTurn ? skill.stats.survival[playerNextTurn] : 1)
-  let survivalColor = survival < .25 ? "gold" : (survival < .5 ? "silver" : "black")
+  // let pastDue = turn > skill?.stats?.mean
+  // let survival = (playerNextTurn ? skill.stats.survival[playerNextTurn] : 1)
+  // let survivalColor = survival < .25 ? "gold" : (survival < .5 ? "silver" : "black")
 
   let tileClass = classNames("skill", Classes.DARK)
 

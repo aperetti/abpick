@@ -48,7 +48,7 @@ export const arrEquals = (arr1: number[], arr2: number[]) => {
   return true
 }
 
-export const getCombos = (allCombos: ComboResponse[], skills: number[]) => {
+export const getSkillCombos = (allCombos: ComboResponse[], skills: number[]) => {
   return allCombos.reduce((summ, el) => {
       if (skills.includes(el.picked))
         return [...summ, el]

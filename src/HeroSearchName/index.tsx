@@ -1,12 +1,12 @@
 import { Popover2 } from '@blueprintjs/popover2';
 import React, { PropsWithChildren, useEffect, useState, useMemo } from 'react';
-import getBestCombos, { ComboResponse } from '../api/getCombos';
+import { ComboResponse } from '../api/getCombos';
 import { NullableSkillList, SkillDict } from '../App';
 import EmptySkillTile from '../EmptySkillTile';
 import SkillImage from '../SkillImage';
 import './index.css';
 import Card from '../Card'
-import { filterNonNullSkills, getCombos, mapPlayerSkills } from '../utils';
+import { filterNonNullSkills, getSkillCombos, mapPlayerSkills } from '../utils';
 
 interface Props {
   onClick: () => void,
@@ -58,8 +58,9 @@ function HeroSearchName({ allCombos, onClick, hero, slot, skills, activePick, av
     if (noPickedSkills)
       return
 
-    setCombos(getCombos(allCombos, slotSkillIds))
+    setCombos(getSkillCombos(allCombos, slotSkillIds))
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
    }, [skillString])
 
   let filteredCombos = useMemo(() => {
