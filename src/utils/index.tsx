@@ -1,10 +1,12 @@
 import { ComboResponse } from '../api/getCombos'
 import Skill from '../types/Skill'
+import Ultimate from '../types/Ultimate'
 
 export const mapPlayerSkills = <T extends (Skill|number)>(slot: number, skills: Array<T|null>) => [0, 1, 2, 3].map(el => {
     let skillSlotIdx = el * 10 + slot
     return skills[skillSlotIdx]
 })
+export const isUlt = (skillId: number, ultimates: Ultimate[]) => ultimates.findIndex(el => el.abilityId === skillId) !== -1
 
 export const filterNonNullSkills = <T extends (Skill|number)>(skills: Array<T|null>) => skills.filter((el): el is T => el !== null && el !== undefined)
 

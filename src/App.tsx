@@ -12,7 +12,7 @@ import PickContainer from './PickContainer';
 import PickedContainer from './PickedContainer';
 import getUltimates from './api/getUltimate';
 import Ultimate from './types/Ultimate'
-import Skill, { Predict } from './types/Skill';
+import Skill from './types/Skill';
 import PickSkills from './PickSkills';
 import SurvivalContainer from './SurvivalContainer';
 import Controls from './Controls'
@@ -26,7 +26,7 @@ import { Popover2 } from '@blueprintjs/popover2';
 import PlayerSkillContainer from './PlayerSkillContainer';
 import Help from './Help';
 import RoomInfo from './RoomInfo';
-import { filterAvailableCombos, filterAvailableSkills, filterNonNullSkills, getPlayerNextTurn, getSkillCombos, mapPlayerSkills, nextPick } from './utils';
+import { filterAvailableCombos, filterAvailableSkills, filterNonNullSkills, getPlayerNextTurn, getSkillCombos, nextPick } from './utils';
 import getBestCombos, { ComboResponse } from './api/getCombos';
 import InvokerAlert from './InvokerAlert';
 
@@ -43,8 +43,10 @@ export type SlotComboDict = Record<number, ComboResponse[]>
 export type SkillHeroDict = Record<number, number>
 export type NullableSkillIdList = Array<number | null>
 export type NullableSkillList = Array<Skill | null>
+export interface RecPick {skill: number, bonus: number}
 export interface State {
   roomCount: number,
+  recPicks: RecPick[],
   selectedPlayer: number,
   allCombos: ComboResponse[],
   heroNameDict: HeroNameDict,
@@ -70,6 +72,7 @@ export interface State {
 let initialState: State = {
   roomCount: 1,
   allCombos: [],
+  recPicks: [],
   heroNameDict: {},
   skillHeroDict: {},
   heroSkillStatDict: {},
@@ -114,7 +117,7 @@ const ultLu = [0, 11, 1, 10, 2, 9, 3, 8, 4, 7, 5, 6]
 
 function App() {
   let [state, setState] = useState<State>(initialState)
-  let { heroNameDict, skillHeroDict, skillDict, skills, ultimates, room, editMode, picks, heroSkillDict: heroDict, strictMode, selectedPlayer, allCombos} = state
+  let { recPicks, heroNameDict, skillHeroDict, skillDict, skills, ultimates, room, editMode, picks, heroSkillDict: heroDict, strictMode, selectedPlayer, allCombos} = state
   let [invokerOpen, setInvokerOpen] = useState(false)
   let activePick = useMemo(() => nextPick(picks), [picks])
   let pickHistory = useMemo(() => filterNonNullSkills(picks), [picks])
@@ -294,6 +297,7 @@ function App() {
 
   let resetBoard = useCallback(() => setState(state => ({
     ...state,
+    recPicks: initialState.recPicks,
     allCombos: initialState.allCombos,
     picks: initialState.picks,
     skills: initialState.skills,
@@ -357,28 +361,6 @@ function App() {
 
   let ultAndSkillLoaded = state.skillsHydrated && state.ultimatesHydrated
 
-  let sortPredict = useCallback((metric: keyof Predict, sort: ("asc" | "desc")) => (el1: Skill, el2: Skill) => {
-    if (!el1.predict && !el2.predict)
-      return 0
-    if (!el1.predict)
-      return -1
-    if (!el2.predict)
-      return 1
-    if (sort === "desc")
-      return el2.predict[metric] - el1.predict[metric]
-    if (sort === "asc")
-      return el1.predict[metric] - el2.predict[metric]
-    return 0
-  }, [])
-
-  let ultPicked = useMemo(() => mapNullableSkills(mapPlayerSkills(selectedPlayer, skills)).reduce((ultFound, el) => Boolean(ultFound || el?.ult), false), [mapNullableSkills, selectedPlayer, skills])
-  let filteredPredictSkills = useMemo(() => mappedSkills
-    .filter((el): el is Skill => Boolean(el !== null && el.predict && !pickHistory.includes(el.abilityId)
-      && !(ultPicked && el.ult) && (pickHistory.length > 29 || el.stats.survival[pickHistory.length + 10] < .6))
-      , [ultPicked, pickHistory]), [mappedSkills, pickHistory, ultPicked])
-  let goldPredictSkill = useMemo(() => [...filteredPredictSkills].sort(sortPredict('gold', 'desc')), [filteredPredictSkills, sortPredict])
-  let damagePredictSkill = useMemo(() => [...filteredPredictSkills].sort(sortPredict('damage', 'desc')), [filteredPredictSkills, sortPredict])
-  let winPredictSkill = useMemo(() => [...filteredPredictSkills].sort(sortPredict('win', 'desc')), [filteredPredictSkills, sortPredict])
   let isUlt = useCallback((skillId: number) => state.ultimates.findIndex(el => el.abilityId === skillId) !== -1, [state.ultimates])
 
   let topComboDenies = useMemo(() => {
@@ -395,7 +377,7 @@ function App() {
     return filterAvailableCombos(oppCombos, picks)
       .sort((el1, el2) => (el2.winPct - el2.avgWinPct) - (el1.winPct - el1.avgWinPct))
       .filter(el => (el.winPct - el.avgWinPct) > .03)
-  }, [skills, picks, allCombos, selectedPlayer])
+  }, [picks, allCombos, selectedPlayer])
 
   let heroSkillStats = useMemo(() => {
     if (!skills)
@@ -497,6 +479,8 @@ function App() {
         <DraftBoardColumn location='player'>
           <Card title="Player Skills">
             <PlayerSkillContainer
+              setRecPicks={(picks: RecPick[]) => setState(state => ({...state, recPicks: picks}))}
+              recPicks={recPicks}
               allCombos={allCombos}
               topComboDenies={topComboDenies}
               slotHeros={Array.from({ length: 10 }).map((_, i) => {
@@ -506,10 +490,9 @@ function App() {
                 else
                   return null
               })}
+              nextPlayerTurn={playerNextTurn}
+              skills={filterNonNullSkills(skills)}
               heroSkillStats={heroSkillStats}
-              damagePredictSkill={damagePredictSkill}
-              winPredictSkill={winPredictSkill}
-              goldPredictSkill={goldPredictSkill}
               pickedSkills={mappedHistory}
               skillDict={skillDict}
               selectedPlayer={selectedPlayer}

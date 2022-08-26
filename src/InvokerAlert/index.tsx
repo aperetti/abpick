@@ -31,6 +31,7 @@ function InvokerAlert({ isOpen, dismissPopop, setSkills, invokerSkills }: PropsW
       <div className='invoker-skills'>
         {invokerSkills && invokerSkills.map((el, i) =>
           <SkillImage
+            key={`invoker-${el.abilityId}`}
             skill={el}
             disableAgs
             picked={selection.indexOf(el.abilityId) !== -1}
