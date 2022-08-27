@@ -1,4 +1,4 @@
-import React, { PropsWithChildren, useEffect, useRef, useState } from 'react';
+import React, { PropsWithChildren, useEffect, useState } from 'react';
 import './index.css';
 import { EditableText, Icon } from '@blueprintjs/core'
 import { Tooltip2 } from '@blueprintjs/popover2';
@@ -23,7 +23,8 @@ return (
   <li data-testid="roomName">
     <Tooltip2 inheritDarkTheme content={`(${props.roomCount}) player connected to room ${props.room}`}>
       <div className='roominfo-content'>
-        <span id="join-room-hold">Room: <EditableText
+        <span id="join-room-hold">ROOM: <EditableText
+          className={room.toLowerCase().length > 5 ? 'edit-join-room' : undefined}
           selectAllOnFocus
           value={room}
           onEdit={() => setRoom(`${window.location.protocol}//${window.location.host}/${props.room}`)}

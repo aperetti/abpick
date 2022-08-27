@@ -2,6 +2,11 @@
  color: darkgray;
  cursor: default;
 }
+
+.edit-join-room {
+    text-transform: lowercase;
+}
+
 .roominfo-indicator {
     position: absolute;
     bottom: 16px;
