@@ -311,7 +311,7 @@ function App() {
     const roomRegex = /^\/(\w{5})$/
     let match = window.location.pathname.match(roomRegex)
     if (match && room !== match[1]) {
-      sendJoinRoom(window.location.pathname.slice(1, 6))
+      sendJoinRoom(window.location.pathname.slice(1, 6).toUpperCase())
     }
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
