@@ -28,13 +28,13 @@ interface ComboProps {
 function ComboContent({ combos, allSkills }: PropsWithChildren<ComboProps>) {
   return (
     <>
-      {combos.length > 0 && <Card title='Combo'>
+      {combos.length > 0 && <Card small title='Combo'>
         <div className='hero-search-combo-container'>
           {combos.map((el) => {
             let skill = allSkills[el.skill]
             let synergy = el.winPct - el.avgWinPct
             return (
-              <><SkillImage showPick synergy={synergy} disableAgs skill={skill} /></>
+              <><SkillImage small showPick synergy={synergy} disableAgs skill={skill} /></>
             )
           })}
         </div>

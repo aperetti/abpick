@@ -9,7 +9,7 @@ export const mapPlayerSkills = <T extends (Skill|number)>(slot: number, skills: 
 export const isUlt = (skillId: number, ultimates: Ultimate[]) => ultimates.findIndex(el => el.abilityId === skillId) !== -1
 
 export const filterNonNullSkills = <T extends (Skill|number)>(skills: Array<T|null>) => skills.filter((el): el is T => el !== null && el !== undefined)
-
+export const filterNullsReturnIds = (skills: (Skill|null)[]) => filterNonNullSkills(skills).map(el => el.abilityId)
 export const filterAvailableSkills = (skills: (null|number)[], picks: (number|null)[]) => filterNonNullSkills(skills).filter(el => !picks.includes(el) && el !== -1)
 export const filterAvailableCombos = (combos: ComboResponse[], picks: (number|null)[]) => combos.filter(el => !picks.includes(el.skill))
 
@@ -38,7 +38,7 @@ export const getPlayerNextTurn = (player: number, turn: number) => {
 }
 
 
-export const arrEquals = (arr1: number[], arr2: number[]) => {
+export function arrEquals<T>(arr1: T[], arr2: T[]){
   if (arr1.length !== arr2.length)
     return false
 

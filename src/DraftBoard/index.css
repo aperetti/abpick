@@ -15,11 +15,11 @@
 .Draft-board-player {
     display: flex;
     flex-direction: column;
-    order:4;
+    order:5;
 }
 
 .Draft-board-left {
-    margin-left: 90px;
+    margin-left: 60px;
     display: flex;
     flex-direction: column;
     order: 1;
@@ -35,7 +35,7 @@
     display: flex;
     flex-direction: column;
     order: 3;
-    margin-right: 70px;
+    margin-right: 40px;
 }
 
 .Draft-board-combos {
@@ -47,6 +47,5 @@
 .Draft-board-overview {
     display: flex;
     flex-direction: column;
-    order: 5;
-    flex-grow: 1;
+    order: 4;
 }

@@ -5,6 +5,7 @@ interface Props {}
 interface PropsColumn {
   location: "left" | "right" | "center" | "overview" | "combos" | "player"
 }
+
 function DraftBoard(props: PropsWithChildren<Props>){
   return (
     <div className="Draft-board">

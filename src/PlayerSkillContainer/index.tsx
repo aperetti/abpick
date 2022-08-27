@@ -24,7 +24,7 @@ interface PlayerSkillProps {
   topComboDenies: ComboResponse[]
   allCombos: ComboResponse[]
   setRecPicks: (picks: RecPick[]) => void
-  skills: number[],
+  skills: (number | null)[],
   nextPlayerTurn?: number,
   recPicks: RecPick[]
 }
@@ -138,7 +138,6 @@ function PlayerSkillContainer({ recPicks, nextPlayerTurn, skills, setRecPicks, a
   let playerSkills = mapPlayerSkills(selectedPlayer, pickedSkills)
   let [metrics, setMetrics] = useState<SkillMetric>(defaultSkillMetrics)
   let [lastRun, setLastRun] = useState<number[]>([])
-  let [lastPicks, setLastPicks] = useState<number[]>([])
 
   let pickedskillIds = filterNonNullSkills(pickedSkills).map(el => el.abilityId)
   let sortFn = useCallback((el1: HeroNameSlot, el2: HeroNameSlot) => {
@@ -185,7 +184,7 @@ function PlayerSkillContainer({ recPicks, nextPlayerTurn, skills, setRecPicks, a
     .sort((el1, el2) => skillDict[el1.id].stats.mean - skillDict[el2.id].stats.mean)
 
   useMemo(() => {
-    let skillRate = skills.reduce((dict, el) => {
+    let skillRate = filterNonNullSkills(skills).reduce((dict, el) => {
       dict[el] = 0
       return dict
     }, {} as Record<number, number>)
@@ -202,7 +201,7 @@ function PlayerSkillContainer({ recPicks, nextPlayerTurn, skills, setRecPicks, a
       skillRate[el.skill] += el.winPct - .5
     })
 
-    let recPicks = Object.entries(skillRate).map(entries => {
+    let newRecPicks = Object.entries(skillRate).map(entries => {
       let [id, number] = entries
       let el = skillDict[Number(id)]
       if (el)
@@ -212,14 +211,14 @@ function PlayerSkillContainer({ recPicks, nextPlayerTurn, skills, setRecPicks, a
           return [Number(id), number]
       else
         return [Number(id), 0]
-    }).sort((el1, el2) => - el1[1] + el2[1]).map(el => ({ skill: el[0], bonus: el[1] })).filter(el => el.bonus > .03)
+    }).sort((el1, el2) => - el1[1] + el2[1])
+      .map(el => ({ skill: el[0], bonus: el[1] }))
+      .filter(el => el.bonus > .03 && (!playerHasUlt || (!skillDict[el.skill].ult)))
 
-    if (!arrEquals(lastPicks, pickedskillIds)) {
-      setLastPicks(pickedskillIds)
-      setRecPicks(recPicks)
-    }
+    setRecPicks(newRecPicks)
 
-  }, [pickedskillIds])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [JSON.stringify(skills), JSON.stringify(pickedSkills), selectedPlayer])
 
   return (
     <div className={"Player-Skill-Container"}>
@@ -302,4 +301,4 @@ export function PlayerPredictSkills(props: PropsWithChildren<PredictProps>) {
     </div>
   );
 }
-export default PlayerSkillContainer;
+export default PlayerSkillContainer

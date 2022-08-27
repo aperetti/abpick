@@ -232,12 +232,7 @@ function App() {
 
   const closeSearch = useCallback(() => setState(state => ({ ...state, activeSlot: -1 })), [])
 
-  const randomizeBoard = useCallback(() => {
-    shuffle(ultimates).slice(0, 12).forEach((ult, i) => setHero(ult, i))
-    setState(state => ({
-      ...state,
-    }))
-  }, [setHero, ultimates])
+
 
   const setPickedSkill = useCallback((skill: Skill) => (ctrl: boolean) => {
     setState(state => {
@@ -280,13 +275,13 @@ function App() {
   }, [activePick])
 
   useEffect(() => {
-    console.log("effect pull combos")
     if (skills.every(el => el !== null && el !== -1)) {
       getBestCombos([], filterNonNullSkills(skills)).then(comboResponse => {
         setState(state => ({ ...state, allCombos: comboResponse }))
       }).catch(err => console.log(err))
     }
-  }, [skills])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [JSON.stringify(skills)])
 
   useEffect(() => {
     getUltimates(setState)
@@ -303,6 +298,14 @@ function App() {
     skills: initialState.skills,
     changeId: state.changeId + 1
   })), [setState])
+
+  const randomizeBoard = useCallback(() => {
+    resetBoard()
+    shuffle(ultimates).slice(0, 12).forEach((ult, i) => setHero(ult, i))
+    setState(state => ({
+      ...state,
+    }))
+  }, [setHero, ultimates, resetBoard])
 
   useEffect(() => {
     const roomRegex = /^\/(\w{5})$/
@@ -491,7 +494,7 @@ function App() {
                   return null
               })}
               nextPlayerTurn={playerNextTurn}
-              skills={filterNonNullSkills(skills)}
+              skills={skills}
               heroSkillStats={heroSkillStats}
               pickedSkills={mappedHistory}
               skillDict={skillDict}
@@ -500,8 +503,6 @@ function App() {
             />
           </Card>
         </DraftBoardColumn>
-
-        {/* <TopCombos skills={mappedSkills} /> */}
 
         <DraftBoardColumn location='overview'>
           {filterNonNullSkills(skills).length > 0 && <SurvivalContainer>
