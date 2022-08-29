@@ -1,8 +1,6 @@
 import React, { PropsWithChildren } from 'react';
 import classNames from 'classnames'
-import './index.css';
-import Skill from '../types/Skill';
-import { ContextMenu2 } from '@blueprintjs/popover2';
+import './index.css'; import Skill from '../types/Skill'; import { ContextMenu2 } from '@blueprintjs/popover2';
 import SkillDetails from '../SkillDetails';
 import SkillImage from '../SkillImage';
 import { NullableSkillList } from '../App';
@@ -13,17 +11,13 @@ interface Props {
   skills: NullableSkillList
   onClick?: (ctrl: boolean) => void;
   picked?: boolean
-  turn: number
-  playerNextTurn: number | undefined
+  highlight?: boolean
 }
 
 
-function SkillTile({ skill, onClick, picked, turn, skills, playerNextTurn}: PropsWithChildren<Props>) {
-  // let pastDue = turn > skill?.stats?.mean
-  // let survival = (playerNextTurn ? skill.stats.survival[playerNextTurn] : 1)
-  // let survivalColor = survival < .25 ? "gold" : (survival < .5 ? "silver" : "black")
+function SkillTile({ skill, onClick, picked, highlight, skills }: PropsWithChildren<Props>) {
 
-  let tileClass = classNames("skill", Classes.DARK)
+  let tileClass = classNames("skill", Classes.DARK, {"skill-win": highlight} )
 
 
   return (

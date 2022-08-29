@@ -184,6 +184,7 @@ function PlayerSkillContainer({ recPicks, nextPlayerTurn, skills, setRecPicks, a
     .sort((el1, el2) => skillDict[el1.id].stats.mean - skillDict[el2.id].stats.mean)
 
   useMemo(() => {
+    console.log('test')
     let skillRate = filterNonNullSkills(skills).reduce((dict, el) => {
       dict[el] = 0
       return dict

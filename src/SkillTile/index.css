@@ -1,5 +1,6 @@
 .skill-win {
-    box-shadow: 0px 0px 4px 3px aliceblue
+    box-shadow: 0px 0px 4px 3px aliceblue;
+    filter: brightness(130%) !important;
 }
 
 .skill-survive {
@@ -25,6 +26,8 @@
 }
 
 .skill {
+
+    filter: brightness(85%);
     position: relative;
     background: var(--bg-dark);
     border: 1px;

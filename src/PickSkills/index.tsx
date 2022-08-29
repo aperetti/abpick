@@ -3,27 +3,28 @@ import './index.css';
 import Skill, { SkillClick } from '../types/Skill';
 import SkillTile from '../SkillTile'
 import EmptySkillTile from '../EmptySkillTile'
+import { RecPick } from '../App';
 
 interface Props {
   skills: Array<Skill | null>
   slot: number
   setPickedSkill: SkillClick
   pickHistory: number[]
-  turn: number
-  playerNextTurn: number | undefined
+  recPicks: RecPick[]
 }
 
 
 
-function PickSkills({ skills, setPickedSkill, pickHistory, turn, playerNextTurn}: PropsWithChildren<Props>) {
+function PickSkills({ skills, setPickedSkill, pickHistory, recPicks}: PropsWithChildren<Props>) {
+  let recIds = recPicks.map(el => el.skill)
   return (
     <div className="Pick-skills">
         {skills.map((skill, i) => {
           if (skill) {
             return <SkillTile
-              playerNextTurn={playerNextTurn}
+              key={skill.abilityId}
+              highlight={recIds.includes(skill.abilityId)}
               skills={skills.filter((el): el is Skill => el !== null)}
-              turn={turn} key={`Pick-skill-${skill.abilityId}`}
               picked={pickHistory.includes(skill.abilityId)}
               onClick={setPickedSkill(skill)}
               skill={skill} />

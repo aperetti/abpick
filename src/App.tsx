@@ -313,7 +313,6 @@ function App() {
     if (match && room !== match[1]) {
       sendJoinRoom(window.location.pathname.slice(1, 6).toUpperCase())
     }
-
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sendJoinRoom])
 
@@ -369,7 +368,7 @@ function App() {
   let topComboDenies = useMemo(() => {
     let dire = selectedPlayer % 2 === 1
     let slots = [0, 2, 4, 6, 8]
-    let offset = dire ? 0 : 1
+    let offset = dire ? 1 : 0
     let oppSkills: (number|null)[] = []
     slots.forEach((el) => {
       let slot = el + offset
@@ -424,8 +423,7 @@ function App() {
           <UltimateContainer>
             <Card title="Ultimates">
               <UltimateSkills
-                playerNextTurn={playerNextTurn}
-                turn={turn}
+                recPicks={recPicks}
                 editMode={editMode}
                 setPickedSkill={setPickedSkill}
                 pickHistory={pickHistory}
@@ -440,8 +438,7 @@ function App() {
               {[0, 11, 1, 10, 2, 9, 3, 8, 4, 7, 5, 6].map(slot => {
                 return (
                   <PickSkills
-                    playerNextTurn={playerNextTurn}
-                    turn={turn}
+                    recPicks={recPicks}
                     key={`standard-abilities-${slot}`}
                     setPickedSkill={setPickedSkill}
                     pickHistory={pickHistory}

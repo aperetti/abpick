@@ -5,7 +5,7 @@ import SkillTile from '../SkillTile'
 import EmptyUltTile from '../EmptyUltTile'
 import Ultimate from '../types/Ultimate';
 import { Tag } from '@blueprintjs/core';
-import { NullableSkillList } from '../App';
+import { NullableSkillList, RecPick } from '../App';
 
 
 interface Props {
@@ -15,14 +15,14 @@ interface Props {
   setPickedSkill: SkillClick
   pickHistory: number[]
   editMode: boolean
-  turn: number
-  playerNextTurn: number | undefined
+  recPicks: RecPick[]
 }
 
 const slotLookup = [0, 1, 2, 9, 10, 11, 3, 4, 5, 6, 7, 8]
 
-function UltimateSkills({ skills, ultimates, setHero, setPickedSkill, pickHistory, editMode, turn, playerNextTurn}: PropsWithChildren<Props>) {
+function UltimateSkills({ skills, ultimates, setHero, setPickedSkill, pickHistory, editMode, recPicks}: PropsWithChildren<Props>) {
   let [help, setHelp] = useState(false)
+  let recIds = recPicks.map(el => el.skill)
   return (
     <div className="Ultimate-content">
       <div className="Ultimate-skills">
@@ -31,7 +31,7 @@ function UltimateSkills({ skills, ultimates, setHero, setPickedSkill, pickHistor
           if (!skill || editMode || ultOnly) {
             return <EmptyUltTile ultOnly={ultOnly} skill={skill} setHero={setHero} key={`empty-skill-${i}`} ultimates={ultimates} slot={slotLookup[i]}></EmptyUltTile>
           } else {
-            return <SkillTile playerNextTurn={playerNextTurn} skills={skills} turn={turn} data-testid={`ultSkillTile${i}`} picked={pickHistory.includes(skill.abilityId)} onClick={setPickedSkill(skill)} skill={skill}></SkillTile>
+            return <SkillTile highlight={recIds.includes(skill.abilityId)} skills={skills} data-testid={`ultSkillTile${i}`} picked={pickHistory.includes(skill.abilityId)} onClick={setPickedSkill(skill)} skill={skill}></SkillTile>
           }
         })}
       </div>

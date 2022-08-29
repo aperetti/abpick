@@ -3,8 +3,11 @@ export interface ComboResponse {
     skill: number,
     picked: number,
     winPct: number,
-    avgWinPct: number
+    avgWinPct: number,
+    synergy: number,
+    matches: number,
 }
+
 async function getBestCombos(pickedSkills: number[], availableSkills: number[]) {
     let res = await fetch(`/api/bestCombos`, {
         body: JSON.stringify({pickedSkills, availableSkills}),
