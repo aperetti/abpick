@@ -301,7 +301,16 @@ function App() {
 
   const randomizeBoard = useCallback(() => {
     resetBoard()
-    shuffle(ultimates).slice(0, 12).forEach((ult, i) => setHero(ult, i))
+    let ults = shuffle(ultimates)
+    let availableUlts = ults.slice(12,)
+    ults.slice(0, 12).forEach((ult, i) => {
+      setHero(ult, i)
+      if (ult.abilityId === null) {
+        let ultIdx = availableUlts.findIndex(el => el.abilityId !== null)
+        setHero(availableUlts[ultIdx], i, true)
+        availableUlts = availableUlts.slice(i+1,)
+      }
+    })
     setState(state => ({
       ...state,
     }))
