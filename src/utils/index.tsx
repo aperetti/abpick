@@ -37,6 +37,7 @@ export const getPlayerNextTurn = (player: number, turn: number) => {
  return playerPicks.find(el => el > turn)
 }
 
+export const derateSkill = (turn: number, pick: number) => 2/(1+Math.exp(-.2*(turn-pick)))
 
 export function arrEquals<T>(arr1: T[], arr2: T[]){
   if (arr1.length !== arr2.length)

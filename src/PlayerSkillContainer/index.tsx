@@ -2,7 +2,7 @@ import React, { useMemo, PropsWithChildren, useCallback, useState } from 'react'
 import EmptySkillTile from '../EmptySkillTile';
 import SkillImage from '../SkillImage';
 import Skill from '../types/Skill';
-import { arrEquals, filterAvailableCombos, filterNonNullSkills,  getSkillCombos, mapPlayerSkills } from '../utils';
+import { arrEquals, derateSkill, filterAvailableCombos, filterAvailableSkills, filterNonNullSkills, getPlayerNextTurn, getSkillCombos, mapPlayerSkills } from '../utils';
 import './index.css';
 import { VictoryChart, VictoryTheme, VictoryArea, VictoryPolarAxis } from 'victory'
 import { Select2, ItemRenderer } from '@blueprintjs/select';
@@ -27,6 +27,7 @@ interface PlayerSkillProps {
   skills: (number | null)[],
   nextPlayerTurn?: number,
   recPicks: RecPick[]
+  turn: number
 }
 
 interface Props { }
@@ -134,7 +135,7 @@ function BalanceChart({ predictMetrics }: PropsWithChildren<BalanceChartProps>) 
 }
 const defaultSkillMetrics = { gold: 0, xp: 0, damage: 0, kills: 0, deaths: 0, assists: 0, tower: 0 }
 
-function PlayerSkillContainer({ recPicks, nextPlayerTurn, skills, setRecPicks, allCombos, heroSkillStats, topComboDenies, setSelectedPlayer, slotHeros, selectedPlayer, pickedSkills, skillDict }: PropsWithChildren<PlayerSkillProps>) {
+function PlayerSkillContainer({ turn, recPicks, nextPlayerTurn, skills, setRecPicks, allCombos, heroSkillStats, topComboDenies, setSelectedPlayer, slotHeros, selectedPlayer, pickedSkills, skillDict }: PropsWithChildren<PlayerSkillProps>) {
   let playerSkills = mapPlayerSkills(selectedPlayer, pickedSkills)
   let [metrics, setMetrics] = useState<SkillMetric>(defaultSkillMetrics)
   let [lastRun, setLastRun] = useState<number[]>([])
@@ -199,22 +200,26 @@ function PlayerSkillContainer({ recPicks, nextPlayerTurn, skills, setRecPicks, a
     })
 
     topComboDenies.forEach(el => {
-      skillRate[el.skill] += el.winPct - .5
+      skillRate[el.skill] += el.synergy
+    })
+
+    filterAvailableSkills(skills, pickedskillIds).forEach(el => {
+      let skill = skillDict[el]
+      if (nextPlayerTurn && skill.stats.mean < nextPlayerTurn) {
+        skillRate[el] += skill.stats.winRate - .45
+      }
     })
 
     let newRecPicks = Object.entries(skillRate).map(entries => {
       let [id, number] = entries
       let el = skillDict[Number(id)]
       if (el)
-        if (nextPlayerTurn && el.stats.mean > nextPlayerTurn)
-          return [Number(id), number / 2]
-        else
-          return [Number(id), number]
+        return [Number(id), derateSkill(turn, el.stats.mean) * number]
       else
         return [Number(id), 0]
     }).sort((el1, el2) => - el1[1] + el2[1])
       .map(el => ({ skill: el[0], bonus: el[1] }))
-      .filter(el => el.bonus > .03 && (!playerHasUlt || (!skillDict[el.skill].ult)))
+      .filter(el => el.bonus > .01 && (!playerHasUlt || (!skillDict[el.skill].ult)))
 
     setRecPicks(newRecPicks)
 
@@ -261,8 +266,11 @@ function PlayerSkillContainer({ recPicks, nextPlayerTurn, skills, setRecPicks, a
       </PlayerSection>}
       {heroSkillStats && heroSkillStats.skills.length > 0 && <PlayerSection title="Best Hero Model Skills">
         <div className='player-skill-combos'>
-          {bestHeroModelSkills && bestHeroModelSkills.slice(0, 8)
-            .map((el, i) => <SkillImage key={i} synergy={el.winRate - .75 * .5 / Math.sqrt(el.matches) - skillDict[el.id].stats.winRate} skill={skillDict[el.id]} small disableAgs showPick />)}
+          {bestHeroModelSkills && bestHeroModelSkills
+            .filter(el => el.winRate > 0.5)
+            .sort((el1, el2) => el2.winRate - el1.winRate)
+            .slice(0, 4)
+            .map((el, i) => <SkillImage key={i} synergy={el.winRate - .5} skill={skillDict[el.id]} small disableAgs showPick />)}
         </div>
       </PlayerSection>}
       {allCombos.length > 0 && <PlayerSection title='Best Combos'>

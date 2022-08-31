@@ -368,7 +368,7 @@ function App() {
   let topComboDenies = useMemo(() => {
     let dire = selectedPlayer % 2 === 1
     let slots = [0, 2, 4, 6, 8]
-    let offset = dire ? 1 : 0
+    let offset = dire ? 0 : 1
     let oppSkills: (number|null)[] = []
     slots.forEach((el) => {
       let slot = el + offset
@@ -399,7 +399,7 @@ function App() {
   }, [state.heroSkillStatDict, skillHeroDict, selectedPlayer, availableSkillIds, skills])
 
   let playerNextTurn = useMemo(() => getPlayerNextTurn(selectedPlayer, turn), [selectedPlayer, turn])
-
+  let recPicksTop4 = recPicks.slice(0,4)
   return (
     <div className="App bp4-dark">
       <Header logo={Logo}>
@@ -423,7 +423,7 @@ function App() {
           <UltimateContainer>
             <Card title="Ultimates">
               <UltimateSkills
-                recPicks={recPicks}
+                recPicks={recPicksTop4}
                 editMode={editMode}
                 setPickedSkill={setPickedSkill}
                 pickHistory={pickHistory}
@@ -438,7 +438,7 @@ function App() {
               {[0, 11, 1, 10, 2, 9, 3, 8, 4, 7, 5, 6].map(slot => {
                 return (
                   <PickSkills
-                    recPicks={recPicks}
+                    recPicks={recPicksTop4}
                     key={`standard-abilities-${slot}`}
                     setPickedSkill={setPickedSkill}
                     pickHistory={pickHistory}
@@ -479,6 +479,7 @@ function App() {
         <DraftBoardColumn location='player'>
           <Card title="Player Skills">
             <PlayerSkillContainer
+              turn={turn}
               setRecPicks={(picks: RecPick[]) => setState(state => ({...state, recPicks: picks}))}
               recPicks={recPicks}
               allCombos={allCombos}

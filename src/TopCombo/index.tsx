@@ -18,7 +18,7 @@ function TopCombo({combo, skillDict, pickedSkills}: PropsWithChildren<Props>) {
               <div className='top-combos-combo'>
                 <SkillImage picked={pickedSkills.includes(combo.picked)} small skill={skillDict[combo.picked]} disableAgs/>
                 <SkillImage picked={pickedSkills.includes(combo.skill)} small skill={skillDict[combo.skill]} disableAgs/>
-                <div className='top-combos-overlay'>Win +{(100 * (combo.winPct - combo.avgWinPct)).toFixed(0)}%</div>
+                <div className='top-combos-overlay'>+{(100 * (combo.synergy)).toFixed(0)}%</div>
               </div>
             </div>
 </>
