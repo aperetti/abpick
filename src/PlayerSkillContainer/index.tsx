@@ -148,6 +148,7 @@ function PlayerSkillContainer({ turn, recPicks, nextPlayerTurn, skills, setRecPi
   }, [])
 
   let playerHasUlt = playerSkills[3] !== null
+  let playerNeedsUlt = playerSkills.slice(0,3).every(el => el !== null)
   let skillIds = filterNonNullSkills(playerSkills).map(el => el.abilityId)
   if (!arrEquals(skillIds, lastRun)) {
     setLastRun(skillIds)
@@ -219,7 +220,7 @@ function PlayerSkillContainer({ turn, recPicks, nextPlayerTurn, skills, setRecPi
         return [Number(id), 0]
     }).sort((el1, el2) => - el1[1] + el2[1])
       .map(el => ({ skill: el[0], bonus: el[1] }))
-      .filter(el => el.bonus > .01 && (!playerHasUlt || (!skillDict[el.skill].ult)))
+      .filter(el => el.bonus > .01 && !(playerHasUlt && skillDict[el.skill].ult) && !(!skillDict[el.skill].ult && playerNeedsUlt))
 
     setRecPicks(newRecPicks)
 
@@ -253,7 +254,7 @@ function PlayerSkillContainer({ turn, recPicks, nextPlayerTurn, skills, setRecPi
           {recPicks.slice(0, 4).map(el => <SkillImage skill={skillDict[el.skill]} synergy={el.bonus} showPick small disableAgs />)}
         </div>
       </PlayerSection>}
-      {goodCombos.length > 0 && <PlayerSection title='Best Combos'>
+      {goodCombos.length > 0 && <PlayerSection title='Combos'>
         <div className='player-skill-combos'>
           {goodCombos.map((el, i) => <SkillImage key={i} synergy={el.winPct - el.avgWinPct} skill={skillDict[el.skill]} small disableAgs showPick />)}
         </div>
