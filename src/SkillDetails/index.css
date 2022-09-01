@@ -18,6 +18,14 @@
     margin-left: 10px;
 }
 
+.skill-detail-group-content {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    column-gap: 20px;
+    white-space: nowrap;
+    color: darkgray
+}
+
 .skill-desc {
     width: 35%;
     display: inline-block;

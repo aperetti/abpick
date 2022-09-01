@@ -24,7 +24,6 @@ function PickSkills({ skills, setPickedSkill, pickHistory, recPicks}: PropsWithC
             return <SkillTile
               key={skill.abilityId}
               highlight={recIds.includes(skill.abilityId)}
-              skills={skills.filter((el): el is Skill => el !== null)}
               picked={pickHistory.includes(skill.abilityId)}
               onClick={setPickedSkill(skill)}
               skill={skill} />

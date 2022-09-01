@@ -2,7 +2,7 @@ import React, { useMemo, PropsWithChildren, useCallback, useState } from 'react'
 import EmptySkillTile from '../EmptySkillTile';
 import SkillImage from '../SkillImage';
 import Skill from '../types/Skill';
-import { arrEquals, derateSkill, filterAvailableCombos, filterAvailableSkills, filterNonNullSkills, getPlayerNextTurn, getSkillCombos, mapPlayerSkills } from '../utils';
+import { arrEquals, derateSkill, filterAvailableCombos, filterAvailableSkills, filterNonNullSkills, getSkillCombos, mapPlayerSkills } from '../utils';
 import './index.css';
 import { VictoryChart, VictoryTheme, VictoryArea, VictoryPolarAxis } from 'victory'
 import { Select2, ItemRenderer } from '@blueprintjs/select';

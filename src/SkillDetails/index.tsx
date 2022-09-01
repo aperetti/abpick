@@ -13,10 +13,10 @@ interface SkillProp {
 
 export function SkillDetail(props: PropsWithChildren<SkillProp>) {
   return (
-    <div className="skill-detail">
+    <>
       <div className="skill-desc">{props.desc}</div>
       <div className="skill-content">{props.children}</div>
-    </div>
+</>
   )
 
 }
@@ -25,16 +25,33 @@ let dec = (num: number, pos: number = 2): number => {
   return Math.round(num * 10 ^ pos) / 10 ^ pos
 }
 
+interface SkillDetailGroupProps {
+  title?: string
+}
+
+export function SkillDetailGroup({ title, children }: PropsWithChildren<SkillDetailGroupProps>) {
+  return (
+    <div className='skill-detail-group'>
+      {title && <div className="skill-subtitle">{title}</div>}
+      <div className='skill-detail-group-content'>
+        {children}
+      </div>
+    </div>
+  )
+}
+
 function SkillDetails(props: PropsWithChildren<Props>) {
   let { skill } = props
   return (
     <div className="skill-details">
       <div className="skill-title">{skill.dname}</div>
-      <SkillDetail desc="Avg. Pick">{dec(skill.stats.mean, 0)}</SkillDetail>
-      <SkillDetail desc="Pick Variation">{dec(skill.stats.std, 0)}</SkillDetail>
-      <SkillDetail desc="Win Rate">{`${(skill.stats.winRate * 100).toFixed(1)}%`}</SkillDetail>
-      {skill.stats.shardWinW && skill.stats.shardWinWo && <SkillDetail desc="Shard Win Delta">{`${((skill.stats.shardWinW - skill.stats.shardWinWo) * 100).toFixed(1)}%`}</SkillDetail>}
-      {skill.stats.scepterWinW && skill.stats.scepterWinWo && <SkillDetail desc="Scepter Win Delta">{`${((skill.stats.scepterWinW - skill.stats.scepterWinWo) * 100).toFixed(1)}%`}</SkillDetail>}
+      <SkillDetailGroup>
+        <SkillDetail desc="Avg. Pick">{dec(skill.stats.mean, 0)}</SkillDetail>
+        <SkillDetail desc="Pick Variation">{dec(skill.stats.std, 0)}</SkillDetail>
+        <SkillDetail desc="Win Rate">{`${(skill.stats.winRate * 100).toFixed(1)}%`}</SkillDetail>
+        {skill.stats.shardWinW && skill.stats.shardWinWo && <SkillDetail desc="Shard Win Delta">{`${((skill.stats.shardWinW - skill.stats.shardWinWo) * 100).toFixed(1)}%`}</SkillDetail>}
+        {skill.stats.scepterWinW && skill.stats.scepterWinWo && <SkillDetail desc="Scepter Win Delta">{`${((skill.stats.scepterWinW - skill.stats.scepterWinWo) * 100).toFixed(1)}%`}</SkillDetail>}
+      </SkillDetailGroup>
       <VictoryChart>
         <VictoryLabel
           textAnchor="start" verticalAnchor="middle"

@@ -31,7 +31,7 @@ function UltimateSkills({ skills, ultimates, setHero, setPickedSkill, pickHistor
           if (!skill || editMode || ultOnly) {
             return <EmptyUltTile ultOnly={ultOnly} skill={skill} setHero={setHero} key={`empty-skill-${i}`} ultimates={ultimates} slot={slotLookup[i]}></EmptyUltTile>
           } else {
-            return <SkillTile highlight={recIds.includes(skill.abilityId)} skills={skills} data-testid={`ultSkillTile${i}`} picked={pickHistory.includes(skill.abilityId)} onClick={setPickedSkill(skill)} skill={skill}></SkillTile>
+            return <SkillTile highlight={recIds.includes(skill.abilityId)} data-testid={`ultSkillTile${i}`} picked={pickHistory.includes(skill.abilityId)} onClick={setPickedSkill(skill)} skill={skill}></SkillTile>
           }
         })}
       </div>

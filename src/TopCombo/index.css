@@ -8,10 +8,16 @@
 
 }
 
+.top-combo-tooltip {
+    width: 150px;
+    padding: 10px;
+}
+
 .combo-card {
     margin-top: 10px;
     margin-bottom: 10px;
 }
+
 .top-combos-combo {
     position: relative;
     display: inline-flex;
