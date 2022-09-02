@@ -9,7 +9,7 @@ interface HeroSkillStat {
 }
 export interface HeroSkillStats {
     _id: string
-    win_rate: number
+    winRate: number
     skills: HeroSkillStat[]
 }
 interface AllSkillsResponse {

@@ -1,4 +1,4 @@
-import React, { useMemo, PropsWithChildren, useCallback, useState } from 'react';
+import React, { useMemo, PropsWithChildren, useState } from 'react';
 import EmptySkillTile from '../EmptySkillTile';
 import SkillImage from '../SkillImage';
 import Skill from '../types/Skill';
@@ -135,17 +135,20 @@ function BalanceChart({ predictMetrics }: PropsWithChildren<BalanceChartProps>) 
 }
 const defaultSkillMetrics = { gold: 0, xp: 0, damage: 0, kills: 0, deaths: 0, assists: 0, tower: 0 }
 
+let sortCombo = (el1: ComboResponse, el2: ComboResponse) => (el2.winPct - el2.avgWinPct) - (el1.winPct - el1.avgWinPct)
+let sortFn = (el1: HeroNameSlot, el2: HeroNameSlot) => {
+  let l1 = el1.slot % 2 === 0 ? el1.slot : el1.slot + 100
+  let l2 = el2.slot % 2 === 0 ? el2.slot : el2.slot + 100
+  return l1 - l2
+}
+
 function PlayerSkillContainer({ turn, recPicks, nextPlayerTurn, skills, setRecPicks, allCombos, heroSkillStats, topComboDenies, setSelectedPlayer, slotHeros, selectedPlayer, pickedSkills, skillDict }: PropsWithChildren<PlayerSkillProps>) {
   let playerSkills = mapPlayerSkills(selectedPlayer, pickedSkills)
   let [metrics, setMetrics] = useState<SkillMetric>(defaultSkillMetrics)
   let [lastRun, setLastRun] = useState<number[]>([])
 
   let pickedskillIds = filterNonNullSkills(pickedSkills).map(el => el.abilityId)
-  let sortFn = useCallback((el1: HeroNameSlot, el2: HeroNameSlot) => {
-    let l1 = el1.slot % 2 === 0 ? el1.slot : el1.slot + 100
-    let l2 = el2.slot % 2 === 0 ? el2.slot : el2.slot + 100
-    return l1 - l2
-  }, [])
+
 
   let playerHasUlt = playerSkills[3] !== null
   let playerNeedsUlt = playerSkills.slice(0,3).every(el => el !== null)
@@ -165,7 +168,6 @@ function PlayerSkillContainer({ turn, recPicks, nextPlayerTurn, skills, setRecPi
     }
   }
 
-  let sortCombo = useCallback((el1: ComboResponse, el2: ComboResponse) => (el2.winPct - el2.avgWinPct) - (el1.winPct - el1.avgWinPct), [])
   let goodCombos = filterAvailableCombos(getSkillCombos(allCombos, skillIds), pickedskillIds).slice(0, 8)
 
   let topCombos = useMemo(() => allCombos.sort(sortCombo).slice(0, 10), [allCombos, sortCombo])

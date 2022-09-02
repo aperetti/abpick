@@ -29,6 +29,7 @@ import RoomInfo from './RoomInfo';
 import { filterAvailableCombos, filterAvailableSkills, filterNonNullSkills, getPlayerNextTurn, getSkillCombos, nextPick } from './utils';
 import getBestCombos, { ComboResponse } from './api/getCombos';
 import InvokerAlert from './InvokerAlert';
+import GameStats from './GameStats';
 
 /*
 TODO
@@ -43,7 +44,7 @@ export type SlotComboDict = Record<number, ComboResponse[]>
 export type SkillHeroDict = Record<number, number>
 export type NullableSkillIdList = Array<number | null>
 export type NullableSkillList = Array<Skill | null>
-export interface RecPick {skill: number, bonus: number}
+export interface RecPick { skill: number, bonus: number }
 export interface State {
   roomCount: number,
   recPicks: RecPick[],
@@ -117,7 +118,7 @@ const ultLu = [0, 11, 1, 10, 2, 9, 3, 8, 4, 7, 5, 6]
 
 function App() {
   let [state, setState] = useState<State>(initialState)
-  let { recPicks, heroNameDict, skillHeroDict, skillDict, skills, ultimates, room, editMode, picks, heroSkillDict: heroDict, strictMode, selectedPlayer, allCombos} = state
+  let { recPicks, heroNameDict, skillHeroDict, skillDict, skills, ultimates, room, editMode, picks, heroSkillDict: heroDict, strictMode, selectedPlayer, allCombos } = state
   let [invokerOpen, setInvokerOpen] = useState(false)
   let activePick = useMemo(() => nextPick(picks), [picks])
   let pickHistory = useMemo(() => filterNonNullSkills(picks), [picks])
@@ -308,7 +309,7 @@ function App() {
       if (ult.abilityId === null) {
         let ultIdx = availableUlts.findIndex(el => el.abilityId !== null)
         setHero(availableUlts[ultIdx], i, true)
-        availableUlts = availableUlts.slice(i+1,)
+        availableUlts = availableUlts.slice(i + 1,)
       }
     })
     setState(state => ({
@@ -368,7 +369,7 @@ function App() {
     }
   }, []), [state.heroNameDict, state.skillHeroDict, skills])
 
-  let availableSkillIds = useMemo(() => filterAvailableSkills(skills, pickHistory), [skills, pickHistory])
+  let availableSkillIds = useMemo(() => filterAvailableSkills(skills, picks), [skills, picks])
 
   let ultAndSkillLoaded = state.skillsHydrated && state.ultimatesHydrated
 
@@ -378,10 +379,10 @@ function App() {
     let dire = selectedPlayer % 2 === 1
     let slots = [0, 2, 4, 6, 8]
     let offset = dire ? 0 : 1
-    let oppSkills: (number|null)[] = []
+    let oppSkills: (number | null)[] = []
     slots.forEach((el) => {
       let slot = el + offset
-      oppSkills = [...oppSkills, ...picks.slice(slot*4, slot*4+4)]
+      oppSkills = [...oppSkills, ...picks.slice(slot * 4, slot * 4 + 4)]
     })
     let oppCombos = getSkillCombos(allCombos, filterNonNullSkills(oppSkills))
 
@@ -390,25 +391,29 @@ function App() {
       .filter(el => (el.winPct - el.avgWinPct) > .03)
   }, [picks, allCombos, selectedPlayer])
 
-  let heroSkillStats = useMemo(() => {
+  let allHeroSkillStats = useMemo(() => {
     if (!skills)
-      return null
-
-    let skill = skills[ultLu[selectedPlayer] * 4]
-    if (skill) {
-      let heroSkillStats = state.heroSkillStatDict[skillHeroDict[skill]]
-      if (heroSkillStats) {
-        heroSkillStats.skills = heroSkillStats.skills.filter(el => availableSkillIds.includes(el.id))
-        return heroSkillStats
+      return Array(10).fill(null)
+    let slots = Array(10).fill(0).map((el, i) => i)
+    return slots.map(slot => {
+      let skill = skills[ultLu[slot] * 4]
+      if (skill) {
+        let heroSkillStats = state.heroSkillStatDict[skillHeroDict[skill]]
+        if (heroSkillStats) {
+          let newHero = {...heroSkillStats}
+          newHero.skills = heroSkillStats.skills.filter(el => availableSkillIds.includes(el.id))
+          return newHero
+        } else {
+          return null
+        }
+      } else {
+        return null
       }
-    }
-
-    return null
-
-  }, [state.heroSkillStatDict, skillHeroDict, selectedPlayer, availableSkillIds, skills])
+    })
+  }, [state.heroSkillStatDict, skillHeroDict, availableSkillIds, skills])
 
   let playerNextTurn = useMemo(() => getPlayerNextTurn(selectedPlayer, turn), [selectedPlayer, turn])
-  let recPicksTop4 = recPicks.slice(0,4)
+  let recPicksTop4 = recPicks.slice(0, 4)
   return (
     <div className="App bp4-dark">
       <Header logo={Logo}>
@@ -428,7 +433,8 @@ function App() {
       {ultAndSkillLoaded && <DraftBoard>
         <DraftBoardColumn location={'center'}>
 
-
+          <GameStats skillDict={skillDict} picks={picks} allCombos={allCombos} heros={allHeroSkillStats} >
+          </GameStats>
           <UltimateContainer>
             <Card title="Ultimates">
               <UltimateSkills
@@ -489,7 +495,7 @@ function App() {
           <Card title="Player Skills">
             <PlayerSkillContainer
               turn={turn}
-              setRecPicks={(picks: RecPick[]) => setState(state => ({...state, recPicks: picks}))}
+              setRecPicks={(picks: RecPick[]) => setState(state => ({ ...state, recPicks: picks }))}
               recPicks={recPicks}
               allCombos={allCombos}
               topComboDenies={topComboDenies}
@@ -502,7 +508,7 @@ function App() {
               })}
               nextPlayerTurn={playerNextTurn}
               skills={skills}
-              heroSkillStats={heroSkillStats}
+              heroSkillStats={allHeroSkillStats[selectedPlayer]}
               pickedSkills={mappedHistory}
               skillDict={skillDict}
               selectedPlayer={selectedPlayer}

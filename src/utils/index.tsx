@@ -6,6 +6,10 @@ export const mapPlayerSkills = <T extends (Skill|number)>(slot: number, skills: 
     let skillSlotIdx = el * 10 + slot
     return skills[skillSlotIdx]
 })
+
+export const mapTeamSkills = <T extends (Skill|number|(number|null)|(Skill|null))>(team: 'dire'|'radiant', skills: Array<T>) =>
+  skills.filter((el, i) => team === 'dire' ? i % 2 === 1 : i % 2 === 0 )
+
 export const isUlt = (skillId: number, ultimates: Ultimate[]) => ultimates.findIndex(el => el.abilityId === skillId) !== -1
 
 export const filterNonNullSkills = <T extends (Skill|number)>(skills: Array<T|null>) => skills.filter((el): el is T => el !== null && el !== undefined)
@@ -49,6 +53,20 @@ export function arrEquals<T>(arr1: T[], arr2: T[]){
     }
   }
   return true
+}
+
+
+export const getActiveComboes =(allCombos: ComboResponse[], skills: number[]) => {
+  let sortedSkills = skills.sort()
+  let combos = sortedSkills.flatMap((skill1, i) => sortedSkills.slice(i+1).map(skill2 => [skill1, skill2]))
+    .reduce((combos, el) => {
+      let foundCombo = allCombos.find(combo => combo.picked === el[0] && combo.skill === el[1])
+      if (foundCombo)
+        return [...combos, foundCombo]
+      else
+        return combos
+    }, [] as ComboResponse[])
+  return combos
 }
 
 export const getSkillCombos = (allCombos: ComboResponse[], skills: number[]) => {
