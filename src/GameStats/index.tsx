@@ -1,7 +1,7 @@
 import React, { PropsWithChildren } from 'react';
 import './index.css';
 import Card from '../Card'
-import { derateSkill, filterNonNullSkills, getActiveComboes, mapPlayerSkills, mapTeamSkills } from '../utils';
+import { filterNonNullSkills, getActiveComboes, mapPlayerSkills, mapTeamSkills } from '../utils';
 import { H2 } from '@blueprintjs/core';
 import CountUp from 'react-countup'
 import { ComboResponse } from '../api/getCombos';
@@ -18,16 +18,16 @@ interface Props {
 export const teams = ['dire', 'radiant'] as const;
 
 export type Teams = typeof teams[number];
-interface ScoreMetric {
+export interface ScoreMetric {
   label: string
   score: number
   team: Teams
   player?: number
 }
 
-const getPlayerSkills = (slot: number, skills: (number | null)[]) => filterNonNullSkills(mapPlayerSkills(slot, skills))
+const getPlayerSkills = (slot: number, picks: (number | null)[]) => filterNonNullSkills(mapPlayerSkills(slot, picks))
 
-function calculatePlayerScore(skillDict: SkillDict , skills: (number|null)[], allCombos: ComboResponse[], heros: (null | HeroSkillStats)[], player: number) {
+export function calculatePlayerScore(skillDict: SkillDict , skills: (number|null)[], allCombos: ComboResponse[], heros: (null | HeroSkillStats)[], player: number) {
   let scores: ScoreMetric[] = []
   let team: Teams = player % 2 === 0 ? 'radiant' : 'dire'
   let playerSkills = getPlayerSkills(player, skills)
@@ -68,12 +68,12 @@ function calculatePlayerScore(skillDict: SkillDict , skills: (number|null)[], al
   return scores
 }
 
-function calculateTeamScores(picks: (number | null)[], allCombos: ComboResponse[]): ScoreMetric[] {
+export function calculateTeamScores(picks: (number | null)[], allCombos: ComboResponse[]): ScoreMetric[] {
   let label = "Team Combo Score"
   return teams.map(team => ({
     team,
     label,
-    score: getActiveComboes(allCombos, filterNonNullSkills(mapTeamSkills(team, picks))).reduce((score, el) => el.synergy + score, 0),
+    score: getActiveComboes(allCombos, filterNonNullSkills(mapTeamSkills(team, picks))).reduce((score, el) => el.synergy + score, 0) / 5,
   })
   )
 }
@@ -97,8 +97,10 @@ function ScoreCard({scores, team}: PropsWithChildren<ScoreCardProps>) {
 function GameStats({ picks, allCombos, heros, skillDict }: PropsWithChildren<Props>) {
   let turn = filterNonNullSkills(picks).length + 1
 
-  let scores: ScoreMetric[] = Array(10).fill(0).reduce((scores, el, i) => [...scores, ...calculatePlayerScore(skillDict, picks, allCombos, heros, i)], [] as ScoreMetric[])
-  scores = [...scores, ...calculateTeamScores(picks, allCombos)]
+  let scores: ScoreMetric[] = [
+    ...Array(10).fill(0).reduce((scores, el, i) => [...scores, ...calculatePlayerScore(skillDict, picks, allCombos, heros, i)], [] as ScoreMetric[]),
+    ...calculateTeamScores(picks, allCombos)
+  ]
 
   return (
     <div className="Gamestat-container">

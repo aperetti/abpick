@@ -4,7 +4,6 @@ import SkillImage from '../SkillImage';
 import Skill from '../types/Skill';
 import { arrEquals, derateSkill, filterAvailableCombos, filterAvailableSkills, filterNonNullSkills, getSkillCombos, mapPlayerSkills } from '../utils';
 import './index.css';
-import { VictoryChart, VictoryTheme, VictoryArea, VictoryPolarAxis } from 'victory'
 import { Select2, ItemRenderer } from '@blueprintjs/select';
 import { Card, Icon, MenuItem } from '@blueprintjs/core';
 import { ComboResponse } from '../api/getCombos';
@@ -12,12 +11,13 @@ import getMetrics, { SkillMetric } from '../api/getMetrics';
 import { RecPick, SkillDict } from '../App';
 import { HeroSkillStats } from '../api/getAllSkills';
 import TopCombo from '../TopCombo';
-
+import { calculatePlayerScore, calculateTeamScores } from '../GameStats';
+import BalanceChart from './BalanceChart'
 
 interface PlayerSkillProps {
   pickedSkills: Array<Skill | null>
   skillDict: SkillDict
-  heroSkillStats: null | HeroSkillStats
+  allHeroSkillStats: (null | HeroSkillStats)[]
   setSelectedPlayer: (playerSlot: number) => void
   selectedPlayer: number
   slotHeros: (string | null)[]
@@ -35,9 +35,6 @@ interface PredictProps {
   category: string
 }
 
-interface BalanceChartProps {
-  predictMetrics: SkillMetric
-}
 
 interface HeroNameSlot {
   slot: number,
@@ -77,64 +74,6 @@ const renderHeroSlot: ItemRenderer<HeroNameSlot> = (heroSlotName, { handleClick,
   );
 };
 
-const maxMetrics: SkillMetric = {
-  gold: 867, damage: 1438,
-  kills: 0.44, deaths: 0.09,
-  assists: 0.63, xp: 882, tower: 401
-}
-
-const minMetrics: SkillMetric = {
-  gold: 318, damage: 270,
-  kills: .06, deaths: 0.27,
-  assists: 0.17, xp: 445, tower: 8.4
-}
-
-type MetricKey = keyof SkillMetric
-
-function BalanceChart({ predictMetrics }: PropsWithChildren<BalanceChartProps>) {
-  let data = Object.entries(predictMetrics).map(([metric, value]) => {
-    let maxMet = maxMetrics[metric as MetricKey]
-    let minMet = minMetrics[metric as MetricKey]
-    let newValue = (value - minMet) / (maxMet - minMet)
-    if (value === 0) {
-      newValue = 0
-    }
-
-    return { x: metric, y: newValue }
-  })
-  return (
-    <VictoryChart polar
-      theme={VictoryTheme.grayscale}
-      domain={{ y: [0, 1] }}
-    >
-      <VictoryArea key={0} data={data} style={{ data: { fillOpacity: 0.2, strokeWidth: 2, fill: 'darkgrey' } }} />
-      {data.map((el, i) =>
-        <VictoryPolarAxis key={i} dependentAxis
-          style={{
-            axisLabel: { padding: 20, fill: "darkgrey" },
-            axis: { stroke: "none" },
-            grid: { stroke: "grey", strokeWidth: 0.25, opacity: 0.5 }
-          }}
-          labelPlacement="perpendicular"
-          axisValue={i + 1} label={el.x === "deaths" ? "survival" : el.x}
-          tickCount={4}
-          tickFormat={el => ''}
-          tickValues={[.25, .5, .75]}
-        />
-      )}
-      <VictoryPolarAxis
-        labelPlacement="parallel"
-        tickFormat={() => ""}
-        style={{
-          axis: { stroke: "none" },
-          grid: { stroke: "grey", opacity: 0.5 }
-        }}
-      />
-    </VictoryChart>
-  )
-}
-const defaultSkillMetrics = { gold: 0, xp: 0, damage: 0, kills: 0, deaths: 0, assists: 0, tower: 0 }
-
 let sortCombo = (el1: ComboResponse, el2: ComboResponse) => (el2.winPct - el2.avgWinPct) - (el1.winPct - el1.avgWinPct)
 let sortFn = (el1: HeroNameSlot, el2: HeroNameSlot) => {
   let l1 = el1.slot % 2 === 0 ? el1.slot : el1.slot + 100
@@ -142,16 +81,18 @@ let sortFn = (el1: HeroNameSlot, el2: HeroNameSlot) => {
   return l1 - l2
 }
 
-function PlayerSkillContainer({ turn, recPicks, nextPlayerTurn, skills, setRecPicks, allCombos, heroSkillStats, topComboDenies, setSelectedPlayer, slotHeros, selectedPlayer, pickedSkills, skillDict }: PropsWithChildren<PlayerSkillProps>) {
+const defaultSkillMetrics = { gold: 0, xp: 0, damage: 0, kills: 0, deaths: 0, assists: 0, tower: 0 }
+
+function PlayerSkillContainer({ turn, recPicks, nextPlayerTurn, skills, setRecPicks, allCombos, allHeroSkillStats, topComboDenies, setSelectedPlayer, slotHeros, selectedPlayer, pickedSkills, skillDict }: PropsWithChildren<PlayerSkillProps>) {
   let playerSkills = mapPlayerSkills(selectedPlayer, pickedSkills)
   let [metrics, setMetrics] = useState<SkillMetric>(defaultSkillMetrics)
   let [lastRun, setLastRun] = useState<number[]>([])
 
   let pickedskillIds = filterNonNullSkills(pickedSkills).map(el => el.abilityId)
-
+  let heroSkillStats = allHeroSkillStats[selectedPlayer]
 
   let playerHasUlt = playerSkills[3] !== null
-  let playerNeedsUlt = playerSkills.slice(0,3).every(el => el !== null)
+  let playerNeedsUlt = playerSkills.slice(0, 3).every(el => el !== null)
   let skillIds = filterNonNullSkills(playerSkills).map(el => el.abilityId)
   if (!arrEquals(skillIds, lastRun)) {
     setLastRun(skillIds)
@@ -170,7 +111,7 @@ function PlayerSkillContainer({ turn, recPicks, nextPlayerTurn, skills, setRecPi
 
   let goodCombos = filterAvailableCombos(getSkillCombos(allCombos, skillIds), pickedskillIds).slice(0, 8)
 
-  let topCombos = useMemo(() => allCombos.sort(sortCombo).slice(0, 10), [allCombos, sortCombo])
+  let topCombos = useMemo(() => allCombos.sort(sortCombo).slice(0, 10), [allCombos])
 
   let mostCombos = useMemo(() => Object.entries(allCombos.reduce<Record<number, number>>((summary, el) => {
     let skills = [el.picked, el.skill]
@@ -184,45 +125,47 @@ function PlayerSkillContainer({ turn, recPicks, nextPlayerTurn, skills, setRecPi
   }, {})).sort((el1, el2) => el2[1] - el1[1]).splice(0, 8).map(el => [Number(el[0]), el[1]]), [allCombos])
 
   let bestHeroModelSkills = heroSkillStats?.skills
-    .filter(el => !pickedskillIds.includes(el.id))
+    .filter(el => !pickedskillIds.includes(el.id) && skillDict[el.id] && skills.includes(el.id))
     .sort((el1, el2) => skillDict[el1.id].stats.mean - skillDict[el2.id].stats.mean)
 
+
   useMemo(() => {
-    let skillRate = filterNonNullSkills(skills).reduce((dict, el) => {
-      dict[el] = 0
-      return dict
-    }, {} as Record<number, number>)
+    let team = selectedPlayer % 2 === 0 ? 'radiant' : 'dire'
 
-    bestHeroModelSkills?.forEach(el => {
-      skillRate[el.id] += el.winRate - .5
-    })
+    let bonusBaselines = [
+          ...calculatePlayerScore(skillDict, pickedSkills.map(el => el?.abilityId || null), allCombos, allHeroSkillStats, selectedPlayer),
+          ...calculateTeamScores(skills, allCombos)
+        ].filter(el => el.team === team)
 
-    goodCombos.forEach(el => {
-      skillRate[el.skill] += el.winPct - .5
-    })
+    let bonusBaseline = bonusBaselines.reduce((bonus, el) => {
+            return bonus + el.score
+          }, 0)
 
-    topComboDenies.forEach(el => {
-      skillRate[el.skill] += el.synergy
-    })
+    let newRecPicks: RecPick[] = filterAvailableSkills(skills, pickedskillIds)
+      .filter(el => !(playerHasUlt && skillDict[el].ult) && !(!skillDict[el].ult && playerNeedsUlt))
+      .map(el => {
+        let newPicks = [...pickedSkills].map(el => el?.abilityId || null)
+        let newPlayerSkills = playerSkills.map(el => el?.abilityId || null)
+        let idx = newPlayerSkills.findIndex(el => el === null)
+        newPlayerSkills[idx] = el
+        newPlayerSkills.forEach((el, i) => newPicks[i*10 + selectedPlayer] = el)
+        let bonuses = [
+          ...calculatePlayerScore(skillDict, newPicks, allCombos, allHeroSkillStats, selectedPlayer),
+          ...calculateTeamScores(newPicks, allCombos)
+        ].filter(el => el.team === team)
 
-    filterAvailableSkills(skills, pickedskillIds).forEach(el => {
-      let skill = skillDict[el]
-      if (nextPlayerTurn && skill.stats.mean < nextPlayerTurn) {
-        skillRate[el] += skill.stats.winRate - .45
-      }
-    })
+        let bonusScore = bonuses.reduce((bonus, el) => {
+            return bonus + el.score
+          }, 0)
 
-    let newRecPicks = Object.entries(skillRate).map(entries => {
-      let [id, number] = entries
-      let el = skillDict[Number(id)]
-      if (el)
-        return [Number(id), derateSkill(turn, el.stats.mean) * number]
-      else
-        return [Number(id), 0]
-    }).sort((el1, el2) => - el1[1] + el2[1])
-      .map(el => ({ skill: el[0], bonus: el[1] }))
-      .filter(el => el.bonus > .01 && !(playerHasUlt && skillDict[el.skill].ult) && !(!skillDict[el.skill].ult && playerNeedsUlt))
+        console.log(el, bonusScore, bonusBaseline, bonuses, bonusBaselines)
 
+        return {
+          skill: el,
+          bonus: (bonusScore - bonusBaseline ) * derateSkill(turn, skillDict[el].stats.mean),
+          detaills: bonuses
+        }
+      }).sort((el1, el2) => el2.bonus - el1.bonus)
     setRecPicks(newRecPicks)
 
     // eslint-disable-next-line react-hooks/exhaustive-deps

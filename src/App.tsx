@@ -29,7 +29,7 @@ import RoomInfo from './RoomInfo';
 import { filterAvailableCombos, filterAvailableSkills, filterNonNullSkills, getPlayerNextTurn, getSkillCombos, nextPick } from './utils';
 import getBestCombos, { ComboResponse } from './api/getCombos';
 import InvokerAlert from './InvokerAlert';
-import GameStats from './GameStats';
+import GameStats, { ScoreMetric } from './GameStats';
 
 /*
 TODO
@@ -44,7 +44,7 @@ export type SlotComboDict = Record<number, ComboResponse[]>
 export type SkillHeroDict = Record<number, number>
 export type NullableSkillIdList = Array<number | null>
 export type NullableSkillList = Array<Skill | null>
-export interface RecPick { skill: number, bonus: number }
+export interface RecPick { skill: number, bonus: number, details?: ScoreMetric[] }
 export interface State {
   roomCount: number,
   recPicks: RecPick[],
@@ -305,11 +305,16 @@ function App() {
     let ults = shuffle(ultimates)
     let availableUlts = ults.slice(12,)
     ults.slice(0, 12).forEach((ult, i) => {
+      if (ult.heroId === 74) {
+        let ultIdx = availableUlts.findIndex(el => el.abilityId !== null)
+        setHero(availableUlts[ultIdx], i)
+        availableUlts = availableUlts.slice(ultIdx + 1,)
+      }
       setHero(ult, i)
       if (ult.abilityId === null) {
         let ultIdx = availableUlts.findIndex(el => el.abilityId !== null)
         setHero(availableUlts[ultIdx], i, true)
-        availableUlts = availableUlts.slice(i + 1,)
+        availableUlts = availableUlts.slice(ultIdx + 1,)
       }
     })
     setState(state => ({
@@ -400,9 +405,7 @@ function App() {
       if (skill) {
         let heroSkillStats = state.heroSkillStatDict[skillHeroDict[skill]]
         if (heroSkillStats) {
-          let newHero = {...heroSkillStats}
-          newHero.skills = heroSkillStats.skills.filter(el => availableSkillIds.includes(el.id))
-          return newHero
+          return heroSkillStats
         } else {
           return null
         }
@@ -410,7 +413,7 @@ function App() {
         return null
       }
     })
-  }, [state.heroSkillStatDict, skillHeroDict, availableSkillIds, skills])
+  }, [state.heroSkillStatDict, skillHeroDict, skills])
 
   let playerNextTurn = useMemo(() => getPlayerNextTurn(selectedPlayer, turn), [selectedPlayer, turn])
   let recPicksTop4 = recPicks.slice(0, 4)
@@ -508,7 +511,7 @@ function App() {
               })}
               nextPlayerTurn={playerNextTurn}
               skills={skills}
-              heroSkillStats={allHeroSkillStats[selectedPlayer]}
+              allHeroSkillStats={allHeroSkillStats}
               pickedSkills={mappedHistory}
               skillDict={skillDict}
               selectedPlayer={selectedPlayer}

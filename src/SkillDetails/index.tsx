@@ -49,8 +49,9 @@ function SkillDetails(props: PropsWithChildren<Props>) {
         <SkillDetail desc="Avg. Pick">{dec(skill.stats.mean, 0)}</SkillDetail>
         <SkillDetail desc="Pick Variation">{dec(skill.stats.std, 0)}</SkillDetail>
         <SkillDetail desc="Win Rate">{`${(skill.stats.winRate * 100).toFixed(1)}%`}</SkillDetail>
-        {skill.stats.shardWinW && skill.stats.shardWinWo && <SkillDetail desc="Shard Win Delta">{`${((skill.stats.shardWinW - skill.stats.shardWinWo) * 100).toFixed(1)}%`}</SkillDetail>}
-        {skill.stats.scepterWinW && skill.stats.scepterWinWo && <SkillDetail desc="Scepter Win Delta">{`${((skill.stats.scepterWinW - skill.stats.scepterWinWo) * 100).toFixed(1)}%`}</SkillDetail>}
+        {skill.stats.shardWinW && skill.stats.shardWinWo && <SkillDetail desc="Shard Win Delta">{`${((skill.stats.shardWinW - skill.stats.winRate) * 100).toFixed(1)}%`}</SkillDetail>}
+        {skill.stats.scepterWinW && skill.stats.scepterWinWo && <SkillDetail desc="Scepter Win Delta">{`${((skill.stats.scepterWinW - skill.stats.winRate) * 100).toFixed(1)}%`}</SkillDetail>}
+        <SkillDetail desc="ID">{skill.abilityId}</SkillDetail>
       </SkillDetailGroup>
       <VictoryChart>
         <VictoryLabel
