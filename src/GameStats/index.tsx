@@ -2,17 +2,20 @@ import React, { PropsWithChildren } from 'react';
 import './index.css';
 import Card from '../Card'
 import { filterNonNullSkills, getActiveComboes, mapPlayerSkills, mapTeamSkills } from '../utils';
-import { H2 } from '@blueprintjs/core';
+import { H2, Menu, MenuDivider, MenuItem } from '@blueprintjs/core';
 import CountUp from 'react-countup'
 import { ComboResponse } from '../api/getCombos';
 import { HeroSkillStats } from '../api/getAllSkills';
 import { SkillDict } from '../App';
+import { Popover2 } from '@blueprintjs/popover2';
+import { stringify } from 'querystring';
 
 interface Props {
   picks: (number | null)[]
   heros: (null | HeroSkillStats)[]
   allCombos: ComboResponse[]
   skillDict: SkillDict
+  playerHeroes: (string|null)[]
 }
 
 export const teams = ['dire', 'radiant'] as const;
@@ -27,7 +30,7 @@ export interface ScoreMetric {
 
 const getPlayerSkills = (slot: number, picks: (number | null)[]) => filterNonNullSkills(mapPlayerSkills(slot, picks))
 
-export function calculatePlayerScore(skillDict: SkillDict , skills: (number|null)[], allCombos: ComboResponse[], heros: (null | HeroSkillStats)[], player: number) {
+export function calculatePlayerScore(skillDict: SkillDict, skills: (number | null)[], allCombos: ComboResponse[], heros: (null | HeroSkillStats)[], player: number) {
   let scores: ScoreMetric[] = []
   let team: Teams = player % 2 === 0 ? 'radiant' : 'dire'
   let playerSkills = getPlayerSkills(player, skills)
@@ -36,7 +39,7 @@ export function calculatePlayerScore(skillDict: SkillDict , skills: (number|null
   let comboScore = getActiveComboes(allCombos, playerSkills)
     .reduce((score, combo) => score + combo.synergy, 0)
   if (comboScore !== 0)
-    scores.push({ label: "Combo Score", score: comboScore, team, player })
+    scores.push({ label: "Combo Synergy", score: comboScore, team, player })
 
   // Skill Score
   let skillScore = playerSkills.reduce((score, el) => {
@@ -47,11 +50,15 @@ export function calculatePlayerScore(skillDict: SkillDict , skills: (number|null
 
 
   let heroStats = heros[player]
+
   if (heroStats) {
 
     // Hero Model Score
     let heroScore = heroStats.winRate - .5
-    scores.push({ label: "Hero Model Score", score: heroScore, team, player })
+    scores.push({ label: "Hero Model Win Rate", score: heroScore, team, player })
+
+    if (player === 0)
+      console.log(player, scores, heroScore)
 
     // Hero Skill Score
     let heroSkillScore = heroStats.skills
@@ -74,27 +81,67 @@ export function calculateTeamScores(picks: (number | null)[], allCombos: ComboRe
     team,
     label,
     score: getActiveComboes(allCombos, filterNonNullSkills(mapTeamSkills(team, picks))).reduce((score, el) => el.synergy + score, 0) / 5,
-  })
-  )
+  })).filter(el => el.score !== 0)
 }
 
 interface ScoreCardProps {
   scores: ScoreMetric[]
   team: Teams
+  playerHeroes: (string|null)[]
 }
 
-function ScoreCard({scores, team}: PropsWithChildren<ScoreCardProps>) {
+
+function ScoreCard({ scores, team, playerHeroes}: PropsWithChildren<ScoreCardProps>) {
   let teamScores = scores.filter(el => el.team === team)
-  let teamScore = teamScores.length > 0 ? teamScores.reduce((score, el) => el.score + score, 0): 0
+  let teamScore = teamScores.length > 0 ? teamScores.reduce((score, el) => el.score + score, 0) : 0
   return (
     <div className='gamestat-scorecard'>
-      <div className='gamestat-scorecard-label'>{team} Score</div>
-      <H2><CountUp end={teamScore * 1000 + 1000} preserveValue={true} /></H2>
+      <Popover2
+        content={
+          <Menu>
+            {Object.entries(teamScores
+              .reduce<Record<string, number>>((summary, el) => {
+                if (el.label in summary)
+                  summary[el.label] += el.score * 1000
+                else
+                  summary[el.label] = el.score * 1000
+                return summary
+              }, {}))
+              .map(([label, score]) => (
+                <MenuItem text={label} label={score.toFixed(0)} />
+              ))}
+              <MenuDivider />
+            {Object.entries(teamScores
+              .reduce<Record<string, number>>((summary, el) => {
+                if (el.player === undefined)
+                  return summary
+
+                if (el.player in summary)
+                  summary[el.player] += el.score * 1000
+                else
+                  summary[el.player] = el.score * 1000
+
+                return summary
+              }, {}))
+              .map(([player, score]) => (
+                <MenuItem text={playerHeroes[Number(player)]} label={score.toFixed(0)}>
+                  {teamScores.filter(el => el.player === Number(player)).map(el => <MenuItem text={el.label} label={(el.score * 1000).toFixed(0)} />)}
+                </MenuItem>
+              ))}
+          </Menu>
+        }
+        position={'bottom'}
+        interactionKind={'hover'}>
+        <div>
+          <div className='gamestat-scorecard-label'>{team} Score</div>
+          <H2><CountUp end={teamScore * 1000 + 1000} preserveValue={true} /></H2>
+        </div>
+      </Popover2>
     </div>
   )
 }
 
-function GameStats({ picks, allCombos, heros, skillDict }: PropsWithChildren<Props>) {
+function GameStats({ picks, allCombos, heros, skillDict, playerHeroes}: PropsWithChildren<Props>) {
   let turn = filterNonNullSkills(picks).length + 1
 
   let scores: ScoreMetric[] = [
@@ -106,9 +153,9 @@ function GameStats({ picks, allCombos, heros, skillDict }: PropsWithChildren<Pro
     <div className="Gamestat-container">
       <Card title="GameStats">
         <div className='gamestat-content'>
-          <ScoreCard scores={scores} team='radiant' />
+          <ScoreCard scores={scores} team='radiant' playerHeroes={playerHeroes} />
           <div className='gamestat-turn-counter'><H2>{turn > 40 ? '--' : turn}</H2><div>Pick</div></div>
-          <ScoreCard scores={scores} team='dire' />
+          <ScoreCard scores={scores} team='dire' playerHeroes={playerHeroes} />
         </div>
       </Card>
     </div>

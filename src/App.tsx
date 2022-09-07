@@ -26,7 +26,7 @@ import { Popover2 } from '@blueprintjs/popover2';
 import PlayerSkillContainer from './PlayerSkillContainer';
 import Help from './Help';
 import RoomInfo from './RoomInfo';
-import { filterAvailableCombos, filterAvailableSkills, filterNonNullSkills, getPlayerNextTurn, getSkillCombos, nextPick } from './utils';
+import { filterAvailableCombos, filterAvailableSkills, filterNonNullSkills, getSkillCombos, nextPick } from './utils';
 import getBestCombos, { ComboResponse } from './api/getCombos';
 import InvokerAlert from './InvokerAlert';
 import GameStats, { ScoreMetric } from './GameStats';
@@ -415,7 +415,6 @@ function App() {
     })
   }, [state.heroSkillStatDict, skillHeroDict, skills])
 
-  let playerNextTurn = useMemo(() => getPlayerNextTurn(selectedPlayer, turn), [selectedPlayer, turn])
   let recPicksTop4 = recPicks.slice(0, 4)
   return (
     <div className="App bp4-dark">
@@ -436,7 +435,7 @@ function App() {
       {ultAndSkillLoaded && <DraftBoard>
         <DraftBoardColumn location={'center'}>
 
-          <GameStats skillDict={skillDict} picks={picks} allCombos={allCombos} heros={allHeroSkillStats} >
+          <GameStats skillDict={skillDict} picks={picks} allCombos={allCombos} heros={allHeroSkillStats} playerHeroes={Array(10).fill(0).map((el, i) => heroSlot[ultLu[i]])} >
           </GameStats>
           <UltimateContainer>
             <Card title="Ultimates">
@@ -509,7 +508,6 @@ function App() {
                 else
                   return null
               })}
-              nextPlayerTurn={playerNextTurn}
               skills={skills}
               allHeroSkillStats={allHeroSkillStats}
               pickedSkills={mappedHistory}

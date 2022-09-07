@@ -25,7 +25,6 @@ interface PlayerSkillProps {
   allCombos: ComboResponse[]
   setRecPicks: (picks: RecPick[]) => void
   skills: (number | null)[],
-  nextPlayerTurn?: number,
   recPicks: RecPick[]
   turn: number
 }
@@ -83,7 +82,7 @@ let sortFn = (el1: HeroNameSlot, el2: HeroNameSlot) => {
 
 const defaultSkillMetrics = { gold: 0, xp: 0, damage: 0, kills: 0, deaths: 0, assists: 0, tower: 0 }
 
-function PlayerSkillContainer({ turn, recPicks, nextPlayerTurn, skills, setRecPicks, allCombos, allHeroSkillStats, topComboDenies, setSelectedPlayer, slotHeros, selectedPlayer, pickedSkills, skillDict }: PropsWithChildren<PlayerSkillProps>) {
+function PlayerSkillContainer({ turn, recPicks, skills, setRecPicks, allCombos, allHeroSkillStats, topComboDenies, setSelectedPlayer, slotHeros, selectedPlayer, pickedSkills, skillDict }: PropsWithChildren<PlayerSkillProps>) {
   let playerSkills = mapPlayerSkills(selectedPlayer, pickedSkills)
   let [metrics, setMetrics] = useState<SkillMetric>(defaultSkillMetrics)
   let [lastRun, setLastRun] = useState<number[]>([])
