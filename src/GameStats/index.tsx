@@ -97,6 +97,7 @@ function ScoreCard({ scores, team, playerHeroes}: PropsWithChildren<ScoreCardPro
   return (
     <div className='gamestat-scorecard'>
       <Popover2
+        disabled={teamScores.length === 0}
         content={
           <Menu>
             {Object.entries(teamScores

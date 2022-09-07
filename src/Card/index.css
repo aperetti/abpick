@@ -11,6 +11,7 @@
     display: block;
     padding: 4px;
     padding-left: 10px;
+    cursor: default;
 }
 
 .card-content {

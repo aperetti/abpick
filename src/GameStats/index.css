@@ -7,6 +7,7 @@
 .gamestat-turn-counter {
     padding-top: 5px;
     padding-bottom: 5px;
+    cursor: default;
 }
 
 
@@ -22,6 +23,7 @@
 .gamestat-scorecard {
     flex-grow: 1;
     padding-top: 5px;
+    cursor: default;
 }
 
 .gamestat-scorecard-label {
