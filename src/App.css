@@ -6,14 +6,12 @@
   width: max-content;
 }
 
-
 .App {
   text-align: center;
-  min-width: 1800px;
+  min-width: 1200px;
   min-height: 100%;
-  background: radial-gradient(#383c48, #101318);
-  height: fit-content;
-  color: darkgray
+  color: darkgray;
+  height: 100vw;
 }
 
 .bp4-dark .bp4-menu {
@@ -78,4 +76,27 @@ padding: 7px;
   grid-template-columns: auto auto;
   padding-top: 10px;
   padding-bottom: 10px;
+}
+
+
+.mobile-support {
+  display: none;
+  color: darkgrey;
+  position: fixed;
+  width: 500px;
+  height: 200px;
+  top: 50%;
+  left: 50%;
+  margin-top: -100px; /* Negative half of height. */
+  margin-left: -250px; /* Negative half of width. */
+}
+
+.mobile-support > h1 {
+  margin-top: 25px;
+}
+
+@media only screen and (max-width: 600px) {
+    .mobile-support {
+        display: unset;
+    }
 }

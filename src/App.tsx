@@ -30,6 +30,7 @@ import { filterAvailableCombos, filterAvailableSkills, filterNonNullSkills, getS
 import getBestCombos, { ComboResponse } from './api/getCombos';
 import InvokerAlert from './InvokerAlert';
 import GameStats, { ScoreMetric } from './GameStats';
+import { H1, Icon } from '@blueprintjs/core';
 
 /*
 TODO
@@ -524,6 +525,10 @@ function App() {
           </SurvivalContainer>}
         </DraftBoardColumn>
       </DraftBoard>}
+      <div className='mobile-support'>
+        <Icon icon='warning-sign' size={120} />
+        <H1 color='#a9a9a9'>Ability Draft Plus requires a larger screen</H1>
+      </div>
     </div>
   );
 }
