@@ -527,7 +527,7 @@ function App() {
       </DraftBoard>}
       <div className='mobile-support'>
         <Icon icon='warning-sign' size={120} />
-        <H1 color='#a9a9a9'>Ability Draft Plus requires a larger screen</H1>
+        <H1 color='#a9a9a9'>Ability Draft Plus requires a larger screen, if on mobile try rotating your screen.</H1>
       </div>
     </div>
   );
