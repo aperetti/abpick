@@ -473,6 +473,7 @@ function App() {
             <MenuDivider title='Play Together' />
             {room === '' && <MenuItem icon='insert' data-testid="createRoomBtn" onClick={sendCreateRoom} text='Create Room'></MenuItem>}
             {room === '' && <MenuItem icon='locate' text='Join Room'><JoinRoom joinRoom={sendJoinRoom} /></MenuItem>}
+            {room !== '' && <MenuItem disabled data-testid="leaveRoomBtn" onClick={() => emitLeaveRoom()} text={`Room: ${room}`}/>}
             {room !== '' && <MenuItem icon='disable' data-testid="leaveRoomBtn" onClick={() => emitLeaveRoom()} text='Leave Room' />}
             <MenuDivider title='Board Options' />
             <MenuItem icon="random" text="True Randomize" onClick={() => randomizeBoard(false)} />
