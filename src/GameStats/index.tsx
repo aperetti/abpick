@@ -8,7 +8,6 @@ import { ComboResponse } from '../api/getCombos';
 import { HeroSkillStats } from '../api/getAllSkills';
 import { SkillDict } from '../App';
 import { Popover2 } from '@blueprintjs/popover2';
-import { stringify } from 'querystring';
 
 interface Props {
   picks: (number | null)[]

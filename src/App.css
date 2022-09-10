@@ -100,5 +100,6 @@ padding: 7px;
     }
     .App {
       min-width: unset;
+      width: 100vw;
     }
 }

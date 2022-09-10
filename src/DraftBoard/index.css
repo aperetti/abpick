@@ -52,6 +52,7 @@
         width:420px;
         row-gap: 5px;
         justify-content: space-around;
+        margin-top: 0px;
     }
 
     .Draft-board-center {

@@ -30,7 +30,10 @@ import { filterAvailableCombos, filterAvailableSkills, filterNonNullSkills, getS
 import getBestCombos, { ComboResponse } from './api/getCombos';
 import InvokerAlert from './InvokerAlert';
 import GameStats, { ScoreMetric } from './GameStats';
-import { H1, Icon } from '@blueprintjs/core';
+import { useWindowSize } from 'usehooks-ts';
+import { Button, Classes, Drawer, DrawerSize, Menu, MenuDivider, MenuItem } from '@blueprintjs/core';
+import { ClassNames } from '@emotion/react';
+import { padding, style } from '@mui/system';
 
 /*
 TODO
@@ -118,9 +121,17 @@ function shuffle<T>(array: Array<T>): Array<T> {
 const ultLu = [0, 11, 1, 10, 2, 9, 3, 8, 4, 7, 5, 6]
 
 function App() {
+  const size = useWindowSize()
+  const draftBoardScale = useMemo(() => {
+    if (size.width < 600)
+      return size.width / 420 * .9
+    else
+      return 1
+  }, [size])
   let [state, setState] = useState<State>(initialState)
   let { recPicks, heroNameDict, skillHeroDict, skillDict, skills, ultimates, room, editMode, picks, heroSkillDict: heroDict, strictMode, selectedPlayer, allCombos } = state
   let [invokerOpen, setInvokerOpen] = useState(false)
+  let [drawer, setDrawer] = useState(false)
   let activePick = useMemo(() => nextPick(picks), [picks])
   let pickHistory = useMemo(() => filterNonNullSkills(picks), [picks])
   const [cookies, setCookie, removeCookie] = useCookies(['room']);
@@ -301,27 +312,55 @@ function App() {
     changeId: state.changeId + 1
   })), [setState])
 
-  const randomizeBoard = useCallback(() => {
+  const randomizeBoard = useCallback((balance: boolean = true) => {
     resetBoard()
-    let ults = shuffle(ultimates)
+    let getWinRate = (ult: Ultimate) => state.heroSkillStatDict[ult.heroId]?.winRate || .5
+    let ults = shuffle(ultimates).filter(el => el.heroId !== 74)
     let availableUlts = ults.slice(12,)
-    ults.slice(0, 12).forEach((ult, i) => {
-      if (ult.heroId === 74) {
-        let ultIdx = availableUlts.findIndex(el => el.abilityId !== null)
-        setHero(availableUlts[ultIdx], i)
-        availableUlts = availableUlts.slice(ultIdx + 1,)
-      }
-      setHero(ult, i)
-      if (ult.abilityId === null) {
-        let ultIdx = availableUlts.findIndex(el => el.abilityId !== null)
-        setHero(availableUlts[ultIdx], i, true)
-        availableUlts = availableUlts.slice(ultIdx + 1,)
-      }
+    ults = ults.slice(0, 12).sort((ult1, ult2) => {
+      if (balance)
+        return getWinRate(ult2) - getWinRate(ult1)
+      else
+        return 0
     })
+
+    let radUlts = shuffle(ults.filter((el, i) => i % 2 === 0))
+    let direUlts = shuffle(ults.filter((el, i) => i % 2 === 1))
+
+    if (balance) {
+      let getScore = (ults: Ultimate[]) => ults.reduce((score, el) => score + getWinRate(el), 0)
+      let scoreDiff = (ults1: Ultimate[], ults2: Ultimate[]) => Math.abs(getScore(ults1) - getScore(ults2))
+
+      let swap = (ults1: Ultimate[], ults2: Ultimate[], i: number) => {
+        let nUlts1 = [...ults1]
+        let nUlts2 = [...ults2]
+        nUlts1[i] = ults2[i]
+        nUlts2[i] = ults1[i]
+        return [nUlts1, nUlts2]
+      }
+      for (let index = 0; index < 5; index++) {
+        let [nRadUlts, nDireUlts] = swap(radUlts, direUlts, index)
+        if (scoreDiff(nRadUlts, nDireUlts) < scoreDiff(radUlts, direUlts)) {
+          radUlts = nRadUlts
+          direUlts = nDireUlts
+        }
+      }
+    }
+
+    Array(6).fill(0).map((el, i) => [radUlts[i], direUlts[i]]).flatMap(el => el)
+      .forEach((ult, idx) => {
+        let i = ultLu[idx]
+        setHero(ult, i)
+        if (ult.abilityId === null) {
+          let ultIdx = availableUlts.findIndex(el => el.abilityId !== null)
+          setHero(availableUlts[ultIdx], i, true)
+          availableUlts = availableUlts.slice(ultIdx + 1,)
+        }
+      })
     setState(state => ({
       ...state,
     }))
-  }, [setHero, ultimates, resetBoard])
+  }, [setHero, ultimates, resetBoard, state.heroSkillStatDict])
 
   useEffect(() => {
     const roomRegex = /^\/(\w{5})$/
@@ -427,13 +466,35 @@ function App() {
         <li><Controls randomizeBoard={randomizeBoard} resetBoard={resetBoard} strictMode={strictMode} setStrictMode={setStrictMode} /></li>
         <li><Help /></li>
       </Header>
+      { draftBoardScale < 1 && <>
+        <Button icon={drawer ? "menu-open" : "menu-closed"} style={{ position: 'fixed', top: 10, right: 20, zIndex: 999 }} onClick={() => setDrawer(true)} />
+        <Drawer title="Settings" size={DrawerSize.STANDARD} onClose={() => setDrawer(false)} isOpen={drawer} className={`${Classes.DARK}`} style={{ paddingTop: '50px' }}>
+          <Menu>
+            <MenuDivider title='Play Together' />
+            {room === '' && <MenuItem icon='insert' data-testid="createRoomBtn" onClick={sendCreateRoom} text='Create Room'></MenuItem>}
+            {room === '' && <MenuItem icon='locate' text='Join Room'><JoinRoom joinRoom={sendJoinRoom} /></MenuItem>}
+            {room !== '' && <MenuItem icon='disable' data-testid="leaveRoomBtn" onClick={() => emitLeaveRoom()} text='Leave Room' />}
+            <MenuDivider title='Board Options' />
+            <MenuItem icon="random" text="True Randomize" onClick={() => randomizeBoard(false)} />
+            <MenuItem icon="changes" text="Balanced Randomize" onClick={() => randomizeBoard()} />
+            <MenuItem icon="reset" text="Reset Board" onClick={resetBoard} />
+            <MenuDivider title='Misc Options' />
+            <MenuItem
+              shouldDismissPopover={false}
+              icon={`${strictMode ? 'full-circle' : 'circle'}`}
+              text={`${strictMode ? 'Disable Strict Mode' : 'Enable Strict Mode'}`}
+              onClick={() => setStrictMode(!strictMode)} />
+          </Menu>
+        </Drawer>
+      </>}
+
       <InvokerAlert
         isOpen={invokerOpen}
         dismissPopop={() => setInvokerOpen(false)}
         setSkills={(skills: number[]) => setHeroState(skills, null, ultLu[state.activeSlot])}
         invokerSkills={heroDict[74]}
       />
-      {ultAndSkillLoaded && <DraftBoard>
+      {ultAndSkillLoaded && <DraftBoard scale={draftBoardScale}>
         <DraftBoardColumn location={'center'}>
 
           <GameStats skillDict={skillDict} picks={picks} allCombos={allCombos} heros={allHeroSkillStats} playerHeroes={Array(10).fill(0).map((el, i) => heroSlot[ultLu[i]])} >
@@ -519,11 +580,11 @@ function App() {
           </Card>
         </DraftBoardColumn>
 
-        <DraftBoardColumn location='overview'>
-          {filterNonNullSkills(skills).length > 0 && <SurvivalContainer>
+        {filterNonNullSkills(skills).length > 0 && <DraftBoardColumn location='overview'>
+          <SurvivalContainer>
             <SkillDatatable pickSkill={setPickedSkill} turn={turn} skills={mapSkills(availableSkillIds)} />
-          </SurvivalContainer>}
-        </DraftBoardColumn>
+          </SurvivalContainer>
+        </DraftBoardColumn>}
       </DraftBoard>}
 
     </div>
