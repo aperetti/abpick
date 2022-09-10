@@ -51,6 +51,7 @@
         padding: 0px;
         width:420px;
         row-gap: 5px;
+        justify-content: space-around;
     }
 
     .Draft-board-center {
@@ -65,10 +66,12 @@
         padding: 0;
         margin: 0;
     }
+
     .Draft-board-left > div, .Draft-board-right > div {
         margin-top: 0px;
         margin-bottom: 10px;
     }
+
     .Draft-board-right {
         order: 3;
         flex-basis: 2;
