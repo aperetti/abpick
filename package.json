@@ -29,6 +29,7 @@
     "socket.io-client": "^4.5.1",
     "typescript": "~3.7.2",
     "use-debounce": "^3.4.3",
+    "usehooks-ts": "^2.6.0",
     "victory": "^36.5.2"
   },
   "scripts": {

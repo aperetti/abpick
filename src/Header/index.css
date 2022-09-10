@@ -82,3 +82,10 @@ ul.hdr-buttons li:not(:last-child):after {
     transform: skew(-20deg);
     filter: drop-shadow(-1px -1px 1px #384848);
 }
+
+
+@media only screen and (max-width: 600px) {
+    .header {
+        display: none;
+    }
+}

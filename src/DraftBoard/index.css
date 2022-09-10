@@ -28,6 +28,7 @@
 .Draft-board-center {
     display: flex;
     flex-direction: column;
+    width:fit-content;
     order: 2;
 }
 
@@ -43,8 +44,35 @@
     flex-direction: column;
     order: 4;
 }
+
 @media only screen and (max-width: 600px) {
     .Draft-board {
-        display: none;
+        flex-wrap: wrap;
+        padding: 0px;
+        width:420px;
+        row-gap: 5px;
+    }
+
+    .Draft-board-center {
+        order: 1;
+        flex-basis: 100%;
+        margin-bottom: 10px;
+    }
+
+    .Draft-board-left {
+        order: 2;
+        flex-basis: 2;
+        padding: 0;
+        margin: 0;
+    }
+    .Draft-board-left > div, .Draft-board-right > div {
+        margin-top: 0px;
+        margin-bottom: 10px;
+    }
+    .Draft-board-right {
+        order: 3;
+        flex-basis: 2;
+        padding: 0;
+        margin: 0;
     }
 }

@@ -1,7 +1,13 @@
 .hero-search-container {
     display: inline-flex;
     gap: 2px;
+    height: 46px;
 }
+
+.hero-name-input > input {
+    height: 100%;
+}
+
 
 .hero-search-container > *:first-child {
     flex-grow: 3

@@ -9,16 +9,14 @@ body {
 }
 
 html, body, #root {
-  min-height: 100%;
   padding:0;
   margin:0;
-  height: auto;
-  width: 100%;
-  background: radial-gradient(#383c48, #101318) fixed;
-  background-size: cover;
-  -webkit-background-size: cover;
-  -moz-background-size: cover;
-  -o-background-size: cover;
+  min-height: 100%;
+}
+
+html {
+  background: radial-gradient(#383c48, #101318);
+  background-size: 100% 100%;
 }
 
 code {

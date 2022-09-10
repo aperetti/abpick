@@ -157,8 +157,6 @@ function PlayerSkillContainer({ turn, recPicks, skills, setRecPicks, allCombos, 
             return bonus + el.score
           }, 0)
 
-        console.log(el, bonusScore, bonusBaseline, bonuses, bonusBaselines)
-
         return {
           skill: el,
           bonus: (bonusScore - bonusBaseline ) * derateSkill(turn, skillDict[el].stats.mean),

@@ -4,6 +4,7 @@ import Ultimate from '../types/Ultimate';
 import { Suggest2, ItemRenderer, ItemListPredicate } from '@blueprintjs/select'
 import { Button, MenuItem } from '@blueprintjs/core'
 import fuzzy from 'fuzzy'
+import { DARK } from '@blueprintjs/core/lib/esm/common/classes';
 
 interface Props {
   ultimates: Ultimate[]
@@ -62,7 +63,7 @@ function HeroSearch(props: PropsWithChildren<Props>) {
   return (
       <div className='hero-search-container'>
         <HeroSuggest
-          className="bp4-dark"
+          className={`${DARK} hero-name-input`}
           items={ultimates}
           itemListPredicate={predicateUlts}
           itemRenderer={renderUlt}

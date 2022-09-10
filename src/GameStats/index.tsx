@@ -57,9 +57,6 @@ export function calculatePlayerScore(skillDict: SkillDict, skills: (number | nul
     let heroScore = heroStats.winRate - .5
     scores.push({ label: "Hero Model Win Rate", score: heroScore, team, player })
 
-    if (player === 0)
-      console.log(player, scores, heroScore)
-
     // Hero Skill Score
     let heroSkillScore = heroStats.skills
       .filter(el => playerSkills.includes(el.id))
