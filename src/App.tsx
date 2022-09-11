@@ -32,8 +32,7 @@ import InvokerAlert from './InvokerAlert';
 import GameStats, { ScoreMetric } from './GameStats';
 import { useWindowSize } from 'usehooks-ts';
 import { Button, Classes, Drawer, DrawerSize, Menu, MenuDivider, MenuItem } from '@blueprintjs/core';
-import { ClassNames } from '@emotion/react';
-import { padding, style } from '@mui/system';
+import MobileRecSkills from './MobileRecSkills';
 
 /*
 TODO
@@ -497,7 +496,7 @@ function App() {
       />
       {ultAndSkillLoaded && <DraftBoard scale={draftBoardScale}>
         <DraftBoardColumn location={'center'}>
-
+          {draftBoardScale < 1 && recPicks.length > 0 && <MobileRecSkills width={size.width} skillDict={skillDict} recPicks={recPicks}/>}
           <GameStats skillDict={skillDict} picks={picks} allCombos={allCombos} heros={allHeroSkillStats} playerHeroes={Array(10).fill(0).map((el, i) => heroSlot[ultLu[i]])} >
           </GameStats>
           <UltimateContainer>

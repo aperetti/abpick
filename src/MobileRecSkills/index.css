@@ -1,0 +1,10 @@
+.mobile-skill-details {
+    display: inline-flex;
+    flex-wrap: wrap;
+}
+
+.mobile-skill-container {
+    min-width: 100%;
+}
+
+
