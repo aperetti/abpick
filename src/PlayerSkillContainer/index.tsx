@@ -13,6 +13,7 @@ import { HeroSkillStats } from '../api/getAllSkills';
 import TopCombo from '../TopCombo';
 import { calculatePlayerScore, calculateTeamScores } from '../GameStats';
 import BalanceChart from './BalanceChart'
+import RecSkill from './RecSkill';
 
 interface PlayerSkillProps {
   pickedSkills: Array<Skill | null>
@@ -160,7 +161,7 @@ function PlayerSkillContainer({ turn, recPicks, skills, setRecPicks, allCombos, 
         return {
           skill: el,
           bonus: (bonusScore - bonusBaseline ) * derateSkill(turn, skillDict[el].stats.mean),
-          detaills: bonuses
+          details: bonuses
         }
       }).sort((el1, el2) => el2.bonus - el1.bonus)
     setRecPicks(newRecPicks)
@@ -192,7 +193,7 @@ function PlayerSkillContainer({ turn, recPicks, skills, setRecPicks, allCombos, 
       </div>
       {recPicks.length > 0 && <PlayerSection title='Recommended Pick'>
         <div className='player-skill-combos'>
-          {recPicks.slice(0, 4).map(el => <SkillImage skill={skillDict[el.skill]} synergy={el.bonus} showPick small disableAgs />)}
+          {recPicks.slice(0, 4).map(el => <RecSkill rec={el} skillDict={skillDict}/>)}
         </div>
       </PlayerSection>}
       {goodCombos.length > 0 && <PlayerSection title='Combos'>

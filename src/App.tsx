@@ -417,8 +417,6 @@ function App() {
 
   let ultAndSkillLoaded = state.skillsHydrated && state.ultimatesHydrated
 
-  let isUlt = useCallback((skillId: number) => state.ultimates.findIndex(el => el.abilityId === skillId) !== -1, [state.ultimates])
-
   let topComboDenies = useMemo(() => {
     let dire = selectedPlayer % 2 === 1
     let slots = [0, 2, 4, 6, 8]
