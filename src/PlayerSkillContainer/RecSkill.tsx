@@ -23,8 +23,8 @@ function RecSkill({skillDict, rec}: PropsWithChildren<Props>) {
           <Card title="Details">
             <div style={{padding: "10px"}}>
               <SkillDetailGroup>
-                {rec.details?.map(recDetail => {
-                return <SkillDetail desc={recDetail.label}>{recDetail.score > 0 ? "+" : "-"}{(recDetail.score * 100).toFixed(0)}</SkillDetail>
+                {rec.details?.filter(recDetail => recDetail.label !== 'Hero Model Win Rate').map(recDetail => {
+                  return <SkillDetail desc={recDetail.label}>{recDetail.score > 0 ? "+" : ""}{(recDetail.score * 100).toFixed(0)}</SkillDetail>
               })
               }
               </SkillDetailGroup>

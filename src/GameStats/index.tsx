@@ -61,19 +61,23 @@ export function calculatePlayerScore(skillDict: SkillDict, skills: (number | nul
         if (heroSkill) {
           let newScore = heroSkill.winRate - .5
           if (idx % 2 === player % 2)
-            newScore = -1 * newScore
-          prevScore += newScore
+            prevScore["ally"] -= newScore > 0 ? newScore : 0
+          else
+            prevScore["enemy"] += newScore
         }
       }
     })
 
     return prevScore
-  }, 0)
+  }, {"enemy": 0, "ally": 0})
 
-  if (denyHeroSkill !== 0) {
-    scores.push({ label: "Hero Deny Picks", "score": denyHeroSkill, team, player })
+  if (denyHeroSkill["ally"] !== 0) {
+    scores.push({ label: "Ally Deny Picks", "score": denyHeroSkill["ally"], team, player })
   }
 
+  if (denyHeroSkill["enemy"] !== 0) {
+    scores.push({ label: "Enemy Deny Picks", "score": denyHeroSkill["enemy"], team, player })
+  }
 
   // Skill Score
   let skillScore = playerSkills.reduce((score, el) => {
@@ -88,7 +92,7 @@ export function calculatePlayerScore(skillDict: SkillDict, skills: (number | nul
 
     // Hero Model Score
     let heroScore = heroStats.winRate - .5
-    scores.push({ label: "Hero Model Win Rate", score: heroScore, team, player })
+      scores.push({ label: "Hero Model Win Rate", score: heroScore, team, player })
 
     // Hero Skill Score
     let heroSkillScore = heroStats.skills
