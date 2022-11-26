@@ -1,7 +1,7 @@
 import React, { PropsWithChildren } from 'react';
 import './index.css';
 import Card from '../Card'
-import { filterNonNullSkills, getActiveComboes, mapPlayerSkills, mapTeamSkills } from '../utils';
+import { filterNonNullSkills, getActiveComboes, getComboDict, getPossibleCombos, mapPlayerSkills, mapTeamSkills } from '../utils';
 import { H2, Menu, MenuDivider, MenuItem } from '@blueprintjs/core';
 import CountUp from 'react-countup'
 import { ComboResponse } from '../api/getCombos';
@@ -14,7 +14,7 @@ interface Props {
   heros: (null | HeroSkillStats)[]
   allCombos: ComboResponse[]
   skillDict: SkillDict
-  playerHeroes: (string|null)[]
+  playerHeroes: (string | null)[]
 }
 
 export const teams = ['dire', 'radiant'] as const;
@@ -32,7 +32,9 @@ const getPlayerSkills = (slot: number, picks: (number | null)[]) => filterNonNul
 export function calculatePlayerScore(skillDict: SkillDict, skills: (number | null)[], allCombos: ComboResponse[], heros: (null | HeroSkillStats)[], player: number) {
   let scores: ScoreMetric[] = []
   let team: Teams = player % 2 === 0 ? 'radiant' : 'dire'
+  let enemy: Teams = player % 2 !== 0 ? 'radiant' : 'dire'
   let playerSkills = getPlayerSkills(player, skills)
+  let comboDict = getComboDict(allCombos)
 
   // Combo Score
   let comboScore = getActiveComboes(allCombos, playerSkills)
@@ -40,13 +42,45 @@ export function calculatePlayerScore(skillDict: SkillDict, skills: (number | nul
   if (comboScore !== 0)
     scores.push({ label: "Combo Synergy", score: comboScore, team, player })
 
+  // Combo Deny Score
+  let denyCombo = playerSkills.reduce((prevScore: number, skill) => {
+    let score = getPossibleCombos(comboDict, skill, filterNonNullSkills(mapTeamSkills(enemy, skills)))
+      .reduce((score: number, combo) => score + combo.synergy, 0)
+    return prevScore + score
+  }, 0)
+  if (denyCombo !== 0) {
+    scores.push({ label: "Combo Deny Picks", "score": denyCombo, team, player })
+  }
+
+  // Hero Skill Deny Score
+  let denyHeroSkill = playerSkills.reduce((prevScore, playerSkill) => {
+    console.log(heros)
+    heros.map((hero, idx) => {
+      if (idx !== player && idx !== 6 && idx !== 5) {
+        let heroSkill = hero?.skills?.find(el => el.id === playerSkill)
+        if (heroSkill) {
+          let newScore = heroSkill.winRate - .5
+          if (idx % 2 === player % 2)
+            newScore = -1 * newScore
+          prevScore += newScore
+        }
+      }
+    })
+
+    return prevScore
+  }, 0)
+
+  if (denyHeroSkill !== 0) {
+    scores.push({ label: "Hero Deny Picks", "score": denyHeroSkill, team, player })
+  }
+
+
   // Skill Score
   let skillScore = playerSkills.reduce((score, el) => {
     return score + skillDict[el].stats.winRate - .5
   }, 0)
   if (skillScore !== 0)
     scores.push({ label: "Skill Win Rate", score: skillScore, team, player })
-
 
   let heroStats = heros[player]
 
@@ -72,6 +106,9 @@ export function calculatePlayerScore(skillDict: SkillDict, skills: (number | nul
 }
 
 export function calculateTeamScores(picks: (number | null)[], allCombos: ComboResponse[]): ScoreMetric[] {
+  return []
+  // TODO this is going to pick up a lot of combos that aren't great.
+  // or actually end up being denies. Need to actually calcluate team synergy if we're going to try this.
   let label = "Team Combo Score"
   return teams.map(team => ({
     team,
@@ -83,11 +120,11 @@ export function calculateTeamScores(picks: (number | null)[], allCombos: ComboRe
 interface ScoreCardProps {
   scores: ScoreMetric[]
   team: Teams
-  playerHeroes: (string|null)[]
+  playerHeroes: (string | null)[]
 }
 
 
-function ScoreCard({ scores, team, playerHeroes}: PropsWithChildren<ScoreCardProps>) {
+function ScoreCard({ scores, team, playerHeroes }: PropsWithChildren<ScoreCardProps>) {
   let teamScores = scores.filter(el => el.team === team)
   let teamScore = teamScores.length > 0 ? teamScores.reduce((score, el) => el.score + score, 0) : 0
   return (
@@ -107,7 +144,7 @@ function ScoreCard({ scores, team, playerHeroes}: PropsWithChildren<ScoreCardPro
               .map(([label, score]) => (
                 <MenuItem text={label} label={score.toFixed(0)} />
               ))}
-              <MenuDivider />
+            <MenuDivider />
             {Object.entries(teamScores
               .reduce<Record<string, number>>((summary, el) => {
                 if (el.player === undefined)
@@ -138,7 +175,7 @@ function ScoreCard({ scores, team, playerHeroes}: PropsWithChildren<ScoreCardPro
   )
 }
 
-function GameStats({ picks, allCombos, heros, skillDict, playerHeroes}: PropsWithChildren<Props>) {
+function GameStats({ picks, allCombos, heros, skillDict, playerHeroes }: PropsWithChildren<Props>) {
   let turn = filterNonNullSkills(picks).length + 1
 
   let scores: ScoreMetric[] = [

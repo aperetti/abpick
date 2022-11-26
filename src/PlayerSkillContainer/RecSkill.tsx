@@ -24,7 +24,6 @@ function RecSkill({skillDict, rec}: PropsWithChildren<Props>) {
             <div style={{padding: "10px"}}>
               <SkillDetailGroup>
                 {rec.details?.map(recDetail => {
-                console.log(recDetail)
                 return <SkillDetail desc={recDetail.label}>{recDetail.score > 0 ? "+" : "-"}{(recDetail.score * 100).toFixed(0)}</SkillDetail>
               })
               }
