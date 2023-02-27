@@ -54,8 +54,7 @@ export function calculatePlayerScore(skillDict: SkillDict, skills: (number | nul
 
   // Hero Skill Deny Score
   let denyHeroSkill = playerSkills.reduce((prevScore, playerSkill) => {
-    console.log(heros)
-    heros.map((hero, idx) => {
+    heros.forEach((hero, idx) => {
       if (idx !== player && idx !== 6 && idx !== 5) {
         let heroSkill = hero?.skills?.find(el => el.id === playerSkill)
         if (heroSkill) {

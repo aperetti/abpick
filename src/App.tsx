@@ -157,6 +157,10 @@ function App() {
     }
   }, [])
 
+  const heroUltDict = useMemo((() => {
+    return Object.fromEntries(ultimates.map(el => [el.heroId, el]))
+  }), [ultimates])
+
   const sendNewState = useCallback(() => {
     setState(state => {
       if (room === '')
@@ -243,7 +247,6 @@ function App() {
   }, [setHeroState, heroDict])
 
   const closeSearch = useCallback(() => setState(state => ({ ...state, activeSlot: -1 })), [])
-
 
 
   const setPickedSkill = useCallback((skill: Skill) => (ctrl: boolean) => {
@@ -371,6 +374,35 @@ function App() {
   }, [sendJoinRoom])
 
   useEffect(() => {
+    if (state.skillsHydrated && state.ultimatesHydrated) {
+
+
+      let heroes = new URL(window.location.href).searchParams.get('heroes')
+      if (heroes !== null) {
+        try {
+          heroes = JSON.parse(heroes)
+          if (Array.isArray(heroes) && heroes.every(el => Number.isInteger(el) || el === null) && heroes.length <= 12) {
+            let invoker = -1
+            heroes.forEach((el, i) => {
+              if (el === 74) {
+                invoker = i
+              } else {
+                el && heroUltDict[el] && setHero(heroUltDict[el], i)
+              }
+            })
+            // skipping invoker if called
+            if (invoker !== -1) {
+              // setHero(heroUltDict[74], invoker)
+            }
+          }
+        } catch (e) {
+          console.log(e)
+        }
+      }
+    }
+  }, [setHero, state.skillsHydrated, state.ultimatesHydrated, heroUltDict])
+
+  useEffect(() => {
     onRoomLeft(() => {
       setState(state => ({
         ...state,
@@ -463,14 +495,14 @@ function App() {
         <li><Controls randomizeBoard={randomizeBoard} resetBoard={resetBoard} strictMode={strictMode} setStrictMode={setStrictMode} /></li>
         <li><Help /></li>
       </Header>
-      { draftBoardScale < 1 && <>
+      {draftBoardScale < 1 && <>
         <Button icon={drawer ? "menu-open" : "menu-closed"} style={{ position: 'fixed', top: 10, right: 20, zIndex: 999 }} onClick={() => setDrawer(true)} />
         <Drawer title="Settings" size={DrawerSize.STANDARD} onClose={() => setDrawer(false)} isOpen={drawer} className={`${Classes.DARK}`} style={{ paddingTop: '50px' }}>
           <Menu>
             <MenuDivider title='Play Together' />
             {room === '' && <MenuItem icon='insert' data-testid="createRoomBtn" onClick={sendCreateRoom} text='Create Room'></MenuItem>}
             {room === '' && <MenuItem icon='locate' text='Join Room'><JoinRoom joinRoom={sendJoinRoom} /></MenuItem>}
-            {room !== '' && <MenuItem disabled data-testid="leaveRoomBtn" onClick={() => emitLeaveRoom()} text={`Room: ${room}`}/>}
+            {room !== '' && <MenuItem disabled data-testid="leaveRoomBtn" onClick={() => emitLeaveRoom()} text={`Room: ${room}`} />}
             {room !== '' && <MenuItem icon='disable' data-testid="leaveRoomBtn" onClick={() => emitLeaveRoom()} text='Leave Room' />}
             <MenuDivider title='Board Options' />
             <MenuItem icon="random" text="True Randomize" onClick={() => randomizeBoard(false)} />
@@ -494,7 +526,7 @@ function App() {
       />
       {ultAndSkillLoaded && <DraftBoard scale={draftBoardScale}>
         <DraftBoardColumn location={'center'}>
-          {draftBoardScale < 1 && recPicks.length > 0 && <MobileRecSkills width={size.width} skillDict={skillDict} recPicks={recPicks}/>}
+          {draftBoardScale < 1 && recPicks.length > 0 && <MobileRecSkills width={size.width} skillDict={skillDict} recPicks={recPicks} />}
           <GameStats skillDict={skillDict} picks={picks} allCombos={allCombos} heros={allHeroSkillStats} playerHeroes={Array(10).fill(0).map((el, i) => heroSlot[ultLu[i]])} >
           </GameStats>
           <UltimateContainer>
